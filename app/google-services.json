@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "466982389677-8o1cf6mam92llcn15je660vvm9rm5hv5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oladapo.appointmenttrack",
+            "certificate_hash": "8103f4f815b72d2ac2161ac03ad935fa2b1fd4c1"
+          }
+        },
+        {
           "client_id": "466982389677-7f0h7ed3sild52b5aeceukrsj56h4h47.apps.googleusercontent.com",
           "client_type": 3
         }
