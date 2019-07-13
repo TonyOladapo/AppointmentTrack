@@ -2,13 +2,13 @@ package com.oladapo.appointmenttrack;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,7 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     private static final int RC_SIGN_IN = 1;
-    private GoogleApiClient mGoogleApiClient;
 
     private static final String TAG = "vkv";
 
-    private PrimaryDrawerItem home, logout, login;
+    private PrimaryDrawerItem logout;
+    private PrimaryDrawerItem login;
     private Drawer drawer;
     private AccountHeader header;
 
@@ -66,13 +66,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initToolbar();
-
-        coordinatorLayout = findViewById(R.id.coordinator_layout);
-
         mAuth = FirebaseAuth.getInstance();
 
+        initToolbar();
+
         initDrawer();
+
+        coordinatorLayout = findViewById(R.id.coordinator_layout);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -86,13 +86,71 @@ public class MainActivity extends AppCompatActivity {
         signIn();
     }
 
+    //starts authentication flow
+    private void signIn() {
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                if (user != null) {
+                    if (!user.isAnonymous()) {
+                        updateUI(user);
+
+                        if (drawer.getDrawerItem(1) != null) {
+                            drawer.removeItem(1);
+                        }
+
+                        header.clear();
+
+                        header.addProfiles(new ProfileDrawerItem().withIdentifier(1).withName(user.getDisplayName()).withEmail(user.getEmail()));
+                        drawer.removeItem(1);
+                        drawer.addStickyFooterItem(logout);
+                    } else {
+                        if (drawer.getDrawerItem(1) == null) {
+                            drawer.addItem(login);
+                        }
+
+                        header.addProfiles(new ProfileDrawerItem().withName("User"));
+                    }
+                } else {
+                    mAuth.signInAnonymously()
+                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+
+                                        Snackbar.make(coordinatorLayout, "You are signed in with an anonymous account", Snackbar.LENGTH_LONG).show();
+
+                                        new Handler().postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                linkAccountAlertDialog();
+                                            }
+                                        }, 3000);
+                                    } else {
+                                        Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
+                                        if (drawer.getDrawerItem(1) == null) {
+                                            drawer.addItem(login);
+                                        }
+
+                                        header.addProfiles(new ProfileDrawerItem().withName("User"));
+                                    }
+                                }
+                            });
+                }
+            }
+        };
+    }
+
+    //google sign in
     private void signInWithGoogle() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder()
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
@@ -100,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, RC_SIGN_IN);
     }
 
+    //onActivityResult for google sign in
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -108,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             if (result.isSuccess()) {
                 GoogleSignInAccount acct = result.getSignInAccount();
 
-                linkWithGoogle(acct);
+                linkWithGoogle(Objects.requireNonNull(acct));
             } else {
                 Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
                 Log.i(TAG, result.toString());
@@ -116,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //links google and anonymous accounts
     private void linkWithGoogle(final GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         Objects.requireNonNull(mAuth.getCurrentUser()).linkWithCredential(credential)
@@ -123,13 +183,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser user = Objects.requireNonNull(task.getResult()).getUser();
-                            updateUI(user);
-                            Snackbar.make(coordinatorLayout, "signed is as " + user.getDisplayName(), Snackbar.LENGTH_LONG).show();
-
+                            Log.d(TAG, "link account with google successful");
                         } else {
                             Exception exception = task.getException();
                             if (exception instanceof FirebaseAuthUserCollisionException) {
+                                Log.d(TAG, "google account collision");
                                 firebaseAuthWithGoogle(acct);
 
                             } else {
@@ -140,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    //create user in firebase
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
@@ -147,65 +206,25 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser user = Objects.requireNonNull(task.getResult()).getUser();
-                            updateUI(user);
-
-                            Snackbar.make(coordinatorLayout, "signed is as " + user.getDisplayName(), Snackbar.LENGTH_LONG).show();
+                            Log.d(TAG, "account creation successful");
                         } else {
-
                             Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
                         }
                     }
                 });
     }
 
-    private void signIn() {
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-
-                if (user != null) {
-
-                } else {
-                    mAuth.signInAnonymously()
-                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        Snackbar.make(coordinatorLayout, "You are signed in with an anonymous account", Snackbar.LENGTH_LONG)
-                                                .setAction("action", null).show();
-
-                                        new Handler().postDelayed(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                linkAccountAlertDialog();
-                                            }
-                                        }, 3000);
-                                    } else {
-                                        Log.d(TAG, "signInAnonymously", task.getException());
-                                        Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-                }
-            }
-        };
-    }
-
+    //updates ui onAuthStateChanged
     private void updateUI(FirebaseUser user) {
-        String name = user.getDisplayName();
-        String email = user.getEmail();
-        Uri photoUri = user.getPhotoUrl();
 
-        ProfileDrawerItem userProfile = new ProfileDrawerItem()
-                .withName(name)
-                .withEmail(email)
-                .withIcon(photoUri);
+        String displayName = user.getDisplayName();
 
-        header.updateProfile(userProfile);
+        if (displayName == null) {
+            enterNameAlertDialog();
+        }
     }
 
+    //alertDialog for linking accounts
     private void linkAccountAlertDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Would you like to link your Google account?")
@@ -216,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Link Google account", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-//                        linkWithGoogle();
                         signInWithGoogle();
                     }
                 })
@@ -229,21 +247,76 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    //alertDialog for entering username
+    private void enterNameAlertDialog() {
+
+        final EditText enterNameEditText = new EditText(this);
+        new AlertDialog.Builder(this)
+                .setTitle("What would you like us to call you?")
+                .setMessage("Enter any name you wish for us to call you. This can be changed later in settings.")
+                .setView(enterNameEditText)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String userName = enterNameEditText.getText().toString();
+
+                        setUserName(userName);
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    //update user name in firebase
+    private void setUserName(final String userName) {
+        final FirebaseUser user = mAuth.getCurrentUser();
+
+        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
+                .setDisplayName(userName)
+                .build();
+
+        Objects.requireNonNull(user).updateProfile(profileUpdate)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+                            String displayName = user.getDisplayName();
+
+                            Snackbar.make(coordinatorLayout, "Welcome " + displayName, Snackbar.LENGTH_LONG).show();
+                        } else {
+                            Snackbar.make(coordinatorLayout, "Error changing display name. This can be changed later in settings", Snackbar.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    //initializes toolbar
     private void initToolbar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 
+    //initializes navigation drawer
     private void initDrawer() {
         login = new PrimaryDrawerItem()
+                .withName("Login")
                 .withIdentifier(1)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedTextColorRes(R.color.colorPrimary)
                 .withSelectedColorRes(R.color.colorPrimaryDark);
 
-        home = new PrimaryDrawerItem()
+        PrimaryDrawerItem home = new PrimaryDrawerItem()
+                .withName("Home")
                 .withIdentifier(2)
+                .withTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedTextColorRes(R.color.colorPrimary)
+                .withSelectedColorRes(R.color.colorPrimaryDark);
+
+        logout = new PrimaryDrawerItem()
+                .withName("Logout")
+                .withIdentifier(3)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedTextColorRes(R.color.colorPrimary)
                 .withSelectedColorRes(R.color.colorPrimaryDark);
@@ -251,18 +324,17 @@ public class MainActivity extends AppCompatActivity {
         header = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withCompactStyle(true)
-                .addProfiles(
-                        new ProfileDrawerItem()
-                )
                 .withTranslucentStatusBar(true)
+                .withCurrentProfileHiddenInList(false)
                 .build();
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withAccountHeader(header)
-                .addDrawerItems(home)
-                .withSelectedItem(-1)
+                .addDrawerItems(
+                        home
+                )
                 .withActionBarDrawerToggleAnimated(true)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -276,11 +348,22 @@ public class MainActivity extends AppCompatActivity {
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new HomeFragment())
                                     .commit();
+                        } else if (i == 1) {
+                            signInWithGoogle();
+                        } else if (i == 3) {
+                            signOut();
                         }
                         return false;
                     }
                 })
                 .build();
+    }
+
+    //signs out user
+    private void signOut() {
+        mAuth.signOut();
+        header.removeProfileByIdentifier(1);
+        drawer.removeAllStickyFooterItems();
     }
 
     @Override
@@ -314,13 +397,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        FirebaseUser user = mAuth.getCurrentUser();
-
         mAuth.addAuthStateListener(mAuthStateListener);
-        if (user != null && !user.isAnonymous()) {
-            updateUI(user);
-            Log.i(TAG, user.getDisplayName());
-        }
     }
 }
