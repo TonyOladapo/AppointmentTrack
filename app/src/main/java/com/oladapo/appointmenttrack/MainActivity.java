@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +15,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -32,15 +33,18 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.oladapo.appointmenttrack.Fragments.AboutFragment;
+import com.oladapo.appointmenttrack.Fragments.CalenderFragment;
 import com.oladapo.appointmenttrack.Fragments.HomeFragment;
+import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
+import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
 
 import java.util.Objects;
 
@@ -53,10 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "vkv";
 
-    private PrimaryDrawerItem logout;
-    private PrimaryDrawerItem login;
+    private PrimaryDrawerItem logout, login;
     private Drawer drawer;
-    private AccountHeader header;
 
     private CoordinatorLayout coordinatorLayout;
     private Toolbar toolbar;
@@ -83,10 +85,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
+        transaction.replace(R.id.layout_container, new HomeFragment());
+        transaction.commit();
+
         signIn();
     }
 
-    //starts authentication flow
     private void signIn() {
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -95,23 +102,19 @@ public class MainActivity extends AppCompatActivity {
 
                 if (user != null) {
                     if (!user.isAnonymous()) {
-                        updateUI(user);
-
                         if (drawer.getDrawerItem(1) != null) {
                             drawer.removeItem(1);
                         }
-
-                        header.clear();
-
-                        header.addProfiles(new ProfileDrawerItem().withIdentifier(1).withName(user.getDisplayName()).withEmail(user.getEmail()));
-                        drawer.removeItem(1);
-                        drawer.addStickyFooterItem(logout);
+                        if (drawer.getFooter() == null) {
+                            drawer.addStickyFooterItem(logout);
+                        }
                     } else {
                         if (drawer.getDrawerItem(1) == null) {
-                            drawer.addItem(login);
+                            drawer.addItemAtPosition(login, 1);
                         }
-
-                        header.addProfiles(new ProfileDrawerItem().withName("User"));
+                        if (drawer.getStickyFooter() != null) {
+                            drawer.removeAllStickyFooterItems();
+                        }
                     }
                 } else {
                     mAuth.signInAnonymously()
@@ -119,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
-
                                         Snackbar.make(coordinatorLayout, "You are signed in with an anonymous account", Snackbar.LENGTH_LONG).show();
 
                                         new Handler().postDelayed(new Runnable() {
@@ -133,14 +135,35 @@ public class MainActivity extends AppCompatActivity {
                                         if (drawer.getDrawerItem(1) == null) {
                                             drawer.addItem(login);
                                         }
-
-                                        header.addProfiles(new ProfileDrawerItem().withName("User"));
                                     }
                                 }
                             });
                 }
             }
         };
+    }
+
+    //alertDialog for linking accounts
+    private void linkAccountAlertDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Would you like to link your Google account?")
+                .setMessage("You are currently signed in as an anonymous user and in the " +
+                        "instance of losing access to this account by uninstalling the app or clearing app data," +
+                        " you would not regain access to the account. The only way to get back your account is by linking " +
+                        "your Google account to avoid losing your data.")
+                .setPositiveButton("Link Google account", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        signInWithGoogle();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //Do something
+                    }
+                })
+                .show();
     }
 
     //google sign in
@@ -214,92 +237,38 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    //updates ui onAuthStateChanged
-    private void updateUI(FirebaseUser user) {
-
-        String displayName = user.getDisplayName();
-
-        if (displayName == null) {
-            enterNameAlertDialog();
-        }
+    //signs out user
+    private void signOut() {
+        mAuth.signOut();
+        drawer.removeAllStickyFooterItems();
     }
 
-    //alertDialog for linking accounts
-    private void linkAccountAlertDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Would you like to link your Google account?")
-                .setMessage("You are currently signed in as an anonymous user and in the " +
-                        "instance of losing access to this account by uninstalling the app or clearing app data," +
-                        " you would not regain access to the account. The only way to get back your account is by linking " +
-                        "your Google account to avoid losing your data.")
-                .setPositiveButton("Link Google account", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        signInWithGoogle();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        //Do something
-                    }
-                })
-                .show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAuth.addAuthStateListener(mAuthStateListener);
     }
 
-    //alertDialog for entering username
-    private void enterNameAlertDialog() {
-
-        final EditText enterNameEditText = new EditText(this);
-        new AlertDialog.Builder(this)
-                .setTitle("What would you like us to call you?")
-                .setMessage("Enter any name you wish for us to call you. This can be changed later in settings.")
-                .setView(enterNameEditText)
-                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String userName = enterNameEditText.getText().toString();
-
-                        setUserName(userName);
-                    }
-                })
-                .setCancelable(false)
-                .show();
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mAuth.removeAuthStateListener(mAuthStateListener);
     }
 
-    //update user name in firebase
-    private void setUserName(final String userName) {
-        final FirebaseUser user = mAuth.getCurrentUser();
-
-        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
-                .setDisplayName(userName)
-                .build();
-
-        Objects.requireNonNull(user).updateProfile(profileUpdate)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-
-                            String displayName = user.getDisplayName();
-
-                            Snackbar.make(coordinatorLayout, "Welcome " + displayName, Snackbar.LENGTH_LONG).show();
-                        } else {
-                            Snackbar.make(coordinatorLayout, "Error changing display name. This can be changed later in settings", Snackbar.LENGTH_LONG).show();
-                        }
-                    }
-                });
-    }
-
-    //initializes toolbar
     private void initToolbar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 
-    //initializes navigation drawer
     private void initDrawer() {
+        AccountHeader header = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withHeaderBackground(R.drawable.header_background)
+                .withTranslucentStatusBar(true)
+                .withCurrentProfileHiddenInList(false)
+                .build();
+
         login = new PrimaryDrawerItem()
                 .withName("Login")
                 .withIdentifier(1)
@@ -314,26 +283,52 @@ public class MainActivity extends AppCompatActivity {
                 .withSelectedTextColorRes(R.color.colorPrimary)
                 .withSelectedColorRes(R.color.colorPrimaryDark);
 
-        logout = new PrimaryDrawerItem()
-                .withName("Logout")
+        PrimaryDrawerItem calender = new PrimaryDrawerItem()
+                .withName("Calender")
                 .withIdentifier(3)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedTextColorRes(R.color.colorPrimary)
                 .withSelectedColorRes(R.color.colorPrimaryDark);
 
-        header = new AccountHeaderBuilder()
-                .withActivity(this)
-                .withCompactStyle(true)
-                .withTranslucentStatusBar(true)
-                .withCurrentProfileHiddenInList(false)
-                .build();
+        PrimaryDrawerItem reminders = new PrimaryDrawerItem()
+                .withName("Reminders")
+                .withIdentifier(4)
+                .withTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedTextColorRes(R.color.colorPrimary)
+                .withSelectedColorRes(R.color.colorPrimaryDark);
+
+        PrimaryDrawerItem settings = new PrimaryDrawerItem()
+                .withName("Settings")
+                .withIdentifier(5)
+                .withTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedTextColorRes(R.color.colorPrimary)
+                .withSelectedColorRes(R.color.colorPrimaryDark);
+
+        PrimaryDrawerItem about = new PrimaryDrawerItem()
+                .withName("About")
+                .withIdentifier(6)
+                .withTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedTextColorRes(R.color.colorPrimary)
+                .withSelectedColorRes(R.color.colorPrimaryDark);
+
+        logout = new PrimaryDrawerItem()
+                .withName("Logout")
+                .withIdentifier(7)
+                .withTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedTextColorRes(R.color.colorPrimary)
+                .withSelectedColorRes(R.color.colorPrimaryDark);
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withAccountHeader(header)
                 .addDrawerItems(
-                        home
+                        home,
+                        calender,
+                        reminders,
+                        new DividerDrawerItem(),
+                        settings,
+                        about
                 )
                 .withActionBarDrawerToggleAnimated(true)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -342,28 +337,51 @@ public class MainActivity extends AppCompatActivity {
 
                         long i = drawerItem.getIdentifier();
 
-                        if (i == 2) {
+                        if (i == 1) {
+                            signInWithGoogle();
+
+                        } else if (i == 2) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new HomeFragment())
                                     .commit();
-                        } else if (i == 1) {
-                            signInWithGoogle();
+
                         } else if (i == 3) {
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                                    .addToBackStack(null)
+                                    .replace(R.id.layout_container, new CalenderFragment())
+                                    .commit();
+
+                        } else if (i == 4) {
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                                    .addToBackStack(null)
+                                    .replace(R.id.layout_container, new RemindersFragment())
+                                    .commit();
+
+                        } else if (i == 5) {
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                                    .addToBackStack(null)
+                                    .replace(R.id.layout_container, new SettingsFragment())
+                                    .commit();
+
+                        } else if (i == 6) {
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                                    .addToBackStack(null)
+                                    .replace(R.id.layout_container, new AboutFragment())
+                                    .commit();
+
+                        } else if (i == 7) {
                             signOut();
                         }
                         return false;
                     }
                 })
                 .build();
-    }
-
-    //signs out user
-    private void signOut() {
-        mAuth.signOut();
-        header.removeProfileByIdentifier(1);
-        drawer.removeAllStickyFooterItems();
     }
 
     @Override
@@ -386,17 +404,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mAuth.removeAuthStateListener(mAuthStateListener);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mAuth.addAuthStateListener(mAuthStateListener);
     }
 }
