@@ -1,5 +1,6 @@
-package com.oladapo.appointmenttrack;
+package com.oladapo.appointmenttrack.Activities;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +18,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -33,6 +36,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -45,15 +50,22 @@ import com.oladapo.appointmenttrack.Fragments.CalenderFragment;
 import com.oladapo.appointmenttrack.Fragments.HomeFragment;
 import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
 import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
+import com.oladapo.appointmenttrack.R;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private FirebaseRecyclerAdapter adapter;
+
+    private RecyclerView recyclerView;
 
     private static final int RC_SIGN_IN = 1;
+    private static final int RC_ADD_CLIENT = 2;
 
     private static final String TAG = "vkv";
 
@@ -70,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        recyclerView = findViewById(R.id.home_recyclerView);
+
         initToolbar();
 
         initDrawer();
@@ -80,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(MainActivity.this, CreateAppointmentActivity.class);
+                startActivityForResult(intent, RC_ADD_CLIENT);
             }
         });
 
@@ -185,16 +199,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                GoogleSignInAccount acct = result.getSignInAccount();
+        switch (requestCode) {
+            case RC_SIGN_IN:
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                if (result.isSuccess()) {
+                    GoogleSignInAccount acct = result.getSignInAccount();
 
-                linkWithGoogle(Objects.requireNonNull(acct));
-            } else {
-                Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                Log.i(TAG, result.toString());
-            }
+                    linkWithGoogle(Objects.requireNonNull(acct));
+                } else {
+                    Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
+                    Log.i(TAG, result.toString());
+                }
+                break;
+
+            case RC_ADD_CLIENT:
+                String name = data.getStringExtra("name");
+                String phone = data.getStringExtra("phone");
+                String desc = data.getStringExtra("desc");
+                String date = data.getStringExtra("date");
+                String time = data.getStringExtra("time");
+//                String reminder = data.getStringExtra("reminder");
+//                String dateAdded = data.getStringExtra("dateAdded");
+
+                insertDataToDatabase(name, phone, desc, date, time);
         }
     }
 
@@ -241,6 +268,23 @@ public class MainActivity extends AppCompatActivity {
     private void signOut() {
         mAuth.signOut();
         drawer.removeAllStickyFooterItems();
+    }
+
+    private void insertDataToDatabase(String clientName, String clientPhone,
+                                      String description, String date, String time) {
+        DatabaseReference databaseReference = FirebaseDatabase
+                .getInstance().getReference().child("appointments").push();
+
+        Map<String, Object>map = new HashMap<>();
+        map.put("clientName", clientName);
+        map.put("clientPhone", clientPhone);
+        map.put("description", description);
+        map.put("date", date);
+        map.put("time", time);
+//        map.put("reminderDate", reminderDate);
+//        map.put("dateAdded", dateAdded);
+
+        databaseReference.setValue(map);
     }
 
     @Override

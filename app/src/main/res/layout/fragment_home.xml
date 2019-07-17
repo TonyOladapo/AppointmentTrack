@@ -21,6 +21,7 @@
         android:layout_marginTop="120dp"
         android:fontFamily="sans-serif-light"
         android:text="@string/no_scheduled_appointments"
-        android:textSize="26sp" />
+        android:textSize="26sp"
+        android:visibility="gone"/>
 
 </RelativeLayout>
