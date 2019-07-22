@@ -7,6 +7,10 @@
     <string name="description">Description</string>
     <string name="done">done</string>
     <string name="required">*Required</string>
-    <string name="time">time</string>
-    <string name="date">date</string>
+    <string name="time">Time</string>
+    <string name="date">Date</string>
+    <string name="set_reminder">Remind me</string>
+    <string name="send_sms_or_email_reminder_to_client">Send reminder to client</string>
+    <string name="email">Email</string>
+    <string name="delete_all_appointments">Delete all appointments</string>
 </resources>

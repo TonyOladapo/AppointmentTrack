@@ -1,6 +1,5 @@
 package com.oladapo.appointmenttrack.Activities;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,9 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -28,7 +25,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -36,8 +32,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -52,20 +46,14 @@ import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
 import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
 import com.oladapo.appointmenttrack.R;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
-    private FirebaseRecyclerAdapter adapter;
-
-    private RecyclerView recyclerView;
 
     private static final int RC_SIGN_IN = 1;
-    private static final int RC_ADD_CLIENT = 2;
 
     private static final String TAG = "vkv";
 
@@ -82,22 +70,11 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        recyclerView = findViewById(R.id.home_recyclerView);
-
         initToolbar();
 
         initDrawer();
 
         coordinatorLayout = findViewById(R.id.coordinator_layout);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CreateAppointmentActivity.class);
-                startActivityForResult(intent, RC_ADD_CLIENT);
-            }
-        });
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -199,29 +176,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case RC_SIGN_IN:
-                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                if (result.isSuccess()) {
-                    GoogleSignInAccount acct = result.getSignInAccount();
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                GoogleSignInAccount acct = result.getSignInAccount();
 
-                    linkWithGoogle(Objects.requireNonNull(acct));
-                } else {
-                    Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                    Log.i(TAG, result.toString());
-                }
-                break;
-
-            case RC_ADD_CLIENT:
-                String name = data.getStringExtra("name");
-                String phone = data.getStringExtra("phone");
-                String desc = data.getStringExtra("desc");
-                String date = data.getStringExtra("date");
-                String time = data.getStringExtra("time");
-//                String reminder = data.getStringExtra("reminder");
-//                String dateAdded = data.getStringExtra("dateAdded");
-
-                insertDataToDatabase(name, phone, desc, date, time);
+                linkWithGoogle(Objects.requireNonNull(acct));
+            } else {
+                Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
+                Log.i(TAG, result.toString());
+            }
         }
     }
 
@@ -268,23 +232,6 @@ public class MainActivity extends AppCompatActivity {
     private void signOut() {
         mAuth.signOut();
         drawer.removeAllStickyFooterItems();
-    }
-
-    private void insertDataToDatabase(String clientName, String clientPhone,
-                                      String description, String date, String time) {
-        DatabaseReference databaseReference = FirebaseDatabase
-                .getInstance().getReference().child("appointments").push();
-
-        Map<String, Object>map = new HashMap<>();
-        map.put("clientName", clientName);
-        map.put("clientPhone", clientPhone);
-        map.put("description", description);
-        map.put("date", date);
-        map.put("time", time);
-//        map.put("reminderDate", reminderDate);
-//        map.put("dateAdded", dateAdded);
-
-        databaseReference.setValue(map);
     }
 
     @Override
@@ -426,27 +373,5 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .build();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
