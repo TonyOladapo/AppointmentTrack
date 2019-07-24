@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="8dp">
+    android:layout_height="wrap_content">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:background="@color/md_white_1000"
+        android:padding="15dp"
+        android:elevation="0dp">
 
         <TextView
             android:id="@+id/added"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="added on"
+            android:text="@string/added_on"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/colorPrimaryDark" />
 
@@ -28,16 +27,13 @@
             android:layout_toStartOf="@id/added"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Title"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         <TextView
             android:id="@+id/date_and_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/clientName"
-            android:text="Date and time"
-            android:textColor="@color/colorPrimaryDark" />
+            android:layout_below="@id/clientName"/>
 
         <TextView
             android:id="@+id/dateAdded"
@@ -45,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/added"
             android:layout_alignParentEnd="true"
-            android:text="Date added" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
 
     </RelativeLayout>
 

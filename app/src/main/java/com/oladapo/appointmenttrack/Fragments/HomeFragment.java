@@ -1,6 +1,9 @@
 package com.oladapo.appointmenttrack.Fragments;
 
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -35,8 +39,8 @@ public class HomeFragment extends Fragment {
     private ViewModel viewModel;
     private TextView noAppointmentsTextView;
 
-    public static final int RC_ADD_CLIENT = 2;
-    public static final int RC_EDIT_CLIENT = 3;
+    private static final int RC_ADD_CLIENT = 2;
+    private static final int RC_EDIT_CLIENT = 3;
 
     @Nullable
     @Override
@@ -48,10 +52,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
-
-        RecyclerView recyclerView = view.findViewById(R.id.home_recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
 
         FloatingActionButton fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -65,7 +65,14 @@ public class HomeFragment extends Fragment {
         noAppointmentsTextView = view.findViewById(R.id.no_appointments);
 
         final AppointmentAdapter adapter = new AppointmentAdapter();
+
+        RecyclerView recyclerView = view.findViewById(R.id.home_recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter));
+
         recyclerView.setAdapter(adapter);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
         viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
@@ -79,27 +86,27 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
-                        .setAction("Undo", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                //undo delete
-                            }
-                        })
-                        .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
-                        .show();
-                viewModel.delete(adapter.getAppointAt(viewHolder.getAdapterPosition()));
-            }
-        }).attachToRecyclerView(recyclerView);
+//        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+//                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+//            @Override
+//            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+//                return false;
+//            }
+//
+//            @Override
+//            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+//                Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
+//                        .setAction("Undo", new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                //undo delete
+//                            }
+//                        })
+//                        .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
+//                        .show();
+//                viewModel.delete(adapter.getAppointAt(viewHolder.getAdapterPosition()));
+//            }
+//        }).attachToRecyclerView(recyclerView);
 
         adapter.setOnItemClickListener(new AppointmentAdapter.OnItemClickListener() {
             @Override
@@ -204,5 +211,88 @@ public class HomeFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public class SwipeToDeleteCallback extends
+            ItemTouchHelper.SimpleCallback {
+
+        private AppointmentAdapter mAdapter;
+        private ViewModel viewModel;
+        private Drawable icon;
+        private final ColorDrawable background;
+
+        SwipeToDeleteCallback(AppointmentAdapter adapter) {
+            super(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+            mAdapter = adapter;
+            icon = ContextCompat.getDrawable(Objects.requireNonNull(getContext()),
+                    R.drawable.ic_delete_white_24dp);
+            background = new ColorDrawable(getResources().getColor(R.color.colorPrimaryDark));
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
+            viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
+                @Override
+                public void onChanged(List<Appointments> appointments) {
+                    if (viewModel.getAllAppointments() == null) {
+                        noAppointmentsTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        mAdapter.submitList(appointments);
+                    }
+                }
+            });
+
+            Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
+                        .setAction("Undo", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                //undo delete
+                            }
+                        })
+                        .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
+                        .show();
+
+            viewModel.delete(mAdapter.getAppointAt(viewHolder.getAdapterPosition()));
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+            View itemView = viewHolder.itemView;
+            int backgroundCornerOffset = 20;
+            int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+            int iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+            int iconBottom = iconTop + icon.getIntrinsicHeight();
+
+            if (dX > 0) { // Swiping to the right
+                int iconLeft = itemView.getLeft() + iconMargin + icon.getIntrinsicWidth();
+                int iconRight = itemView.getLeft() + iconMargin;
+                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+
+                background.setBounds(itemView.getLeft(), itemView.getTop(),
+                        itemView.getLeft() + ((int) dX) + backgroundCornerOffset,
+                        itemView.getBottom());
+            } else if (dX < 0) { // Swiping to the left
+                int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
+                int iconRight = itemView.getRight() - iconMargin;
+                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+
+                background.setBounds(itemView.getRight() + ((int) dX) - backgroundCornerOffset,
+                        itemView.getTop(), itemView.getRight(), itemView.getBottom());
+            } else { // view is unSwiped
+                background.setBounds(0, 0, 0, 0);
+            }
+
+            background.draw(c);
+            icon.draw(c);
+        }
     }
 }

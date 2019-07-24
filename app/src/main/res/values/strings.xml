@@ -13,4 +13,5 @@
     <string name="send_sms_or_email_reminder_to_client">Send reminder to client</string>
     <string name="email">Email</string>
     <string name="delete_all_appointments">Delete all appointments</string>
+    <string name="added_on">added on</string>
 </resources>

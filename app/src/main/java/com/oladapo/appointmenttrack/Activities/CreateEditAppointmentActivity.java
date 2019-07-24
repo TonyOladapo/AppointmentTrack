@@ -1,12 +1,19 @@
 package com.oladapo.appointmenttrack.Activities;
 
+import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
@@ -19,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
@@ -66,6 +74,18 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_appointment);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            int startColor = ContextCompat.getColor(this, R.color.colorPrimary);
+            int endColor = ContextCompat.getColor(this, R.color.colorPrimary);
+            ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
+        } else {
+
+            int startColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            int endColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
+        }
+
         coordinatorLayout = findViewById(R.id.createAppCoordinator);
         nameEditText = findViewById(R.id.input_name);
         phoneEditText = findViewById(R.id.input_phone);
@@ -97,7 +117,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
                 calendar.set(Calendar.MONTH, month);
                 calendar.set(Calendar.DAY_OF_MONTH, day);
 
-                String format = "dd/MM/yy";
+                String format = "dd MMM yy";
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.getDefault());
                 dateEditText.setText(simpleDateFormat.format(calendar.getTime()));
             }
@@ -203,7 +223,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     calendar.set(Calendar.MINUTE, minute);
 
-                    String time = hourOfDay + ":" + minute;
+                    @SuppressLint("DefaultLocale") String time = (String.format("%02d:%02d", hourOfDay, minute));
                     timeEditText.setText(time);
                 }
             }
@@ -219,13 +239,14 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         final int minute = calendar.get(Calendar.MINUTE);
 
         TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                 if (timePicker.isShown()) {
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     calendar.set(Calendar.MINUTE, minute);
 
-                    reminderTime = hourOfDay + ":" + minute;
+                    reminderTime = String.format("%02d:%02d", hourOfDay, minute);
                     Snackbar.make(coordinatorLayout, "Reminder set for " + reminderDate + " at " + reminderTime, Snackbar.LENGTH_LONG).show();
                 }
             }
@@ -248,13 +269,14 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         final int minute = calendar.get(Calendar.MINUTE);
 
         TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                 if (timePicker.isShown()) {
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     calendar.set(Calendar.MINUTE, minute);
 
-                    clientReminderTime = hourOfDay + ":" + minute;
+                    clientReminderTime = String.format("%02d:%02d", hourOfDay, minute);
                     Snackbar.make(coordinatorLayout, "Client reminder set for " + clientReminderDate + " at " + clientReminderTime, Snackbar.LENGTH_LONG).show();
                 }
             }
@@ -269,6 +291,23 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         });
         timePickerDialog.setCanceledOnTouchOutside(true);
         timePickerDialog.show();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent( event );
     }
 
     private void remindClientAlertDialog() {
@@ -333,7 +372,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         String time = timeEditText.getText().toString();
         String desc = descEditText.getText().toString();
 
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM", Locale.getDefault());
+        SimpleDateFormat format = new SimpleDateFormat("dd MMM", Locale.getDefault());
         Date today = new Date();
 
         String dateAdded = format.format(today);
@@ -450,5 +489,10 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 }

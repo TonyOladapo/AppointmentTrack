@@ -1,12 +1,12 @@
 package com.oladapo.appointmenttrack.Activities;
 
+import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -68,6 +69,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            int startColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            int endColor = ContextCompat.getColor(this, R.color.colorPrimary);
+            ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
+        } else {
+
+            int startColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            int endColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
+        }
+
         mAuth = FirebaseAuth.getInstance();
 
         initToolbar();
@@ -96,15 +109,15 @@ public class MainActivity extends AppCompatActivity {
                         if (drawer.getDrawerItem(1) != null) {
                             drawer.removeItem(1);
                         }
-                        if (drawer.getFooter() == null) {
-                            drawer.addStickyFooterItem(logout);
+                        if (drawer.getDrawerItem(7) == null) {
+                            drawer.addItem(logout);
                         }
                     } else {
                         if (drawer.getDrawerItem(1) == null) {
                             drawer.addItemAtPosition(login, 1);
                         }
-                        if (drawer.getStickyFooter() != null) {
-                            drawer.removeAllStickyFooterItems();
+                        if (drawer.getDrawerItem(7) != null) {
+                            drawer.removeItem(7);
                         }
                     }
                 } else {
@@ -231,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
     //signs out user
     private void signOut() {
         mAuth.signOut();
-        drawer.removeAllStickyFooterItems();
+        drawer.removeItem(7);
     }
 
     @Override

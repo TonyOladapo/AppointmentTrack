@@ -48,6 +48,12 @@ dependencies {
     //picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
 
+    //waterfallToolbar
+    implementation 'com.github.hugocastelani:waterfall-toolbar:0.5.0'
+
+    //nightOwl
+    implementation 'com.asha.nightowllib:nightowllib:0.2'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
