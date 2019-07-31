@@ -65,13 +65,14 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     String clientReminderDate;
     String clientReminderTime;
 
+    private boolean SMS_REMINDER;
+    private boolean EMAIL_REMINDER;
+    private boolean BOTH_TYPES;
+
     private static final int REMINDER_ON = 1;
     private static final int REMINDER_OFF = 0;
     private static final int CLIENT_REMINDER_OFF = 0;
     private static final int CLIENT_REMINDER_ON = 1;
-    private static Boolean SMS_REMINDER = false;
-    private static Boolean EMAIL_REMINDER = false;
-    private static Boolean BOTH_TYPES = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -145,6 +146,27 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
                     reminderDate = null;
                     reminderTime = null;
+                }
+            }
+        });
+
+        clientReminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    clientReminderState = CLIENT_REMINDER_ON;
+
+                    clientReminderAlertDialog();
+
+                } else {
+                    clientReminderState = CLIENT_REMINDER_OFF;
+
+                    clientReminderDate = null;
+                    clientReminderTime = null;
+
+                    SMS_REMINDER = false;
+                    EMAIL_REMINDER = false;
+                    BOTH_TYPES = false;
                 }
             }
         });
@@ -253,6 +275,110 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         dialog.create().show();
     }
+
+    private void clientReminderAlertDialog() {
+        final CharSequence[] items = {"SMS", "Email", "SMS & Email"};
+
+        final Calendar calendar = Calendar.getInstance();
+
+        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        final int minute = calendar.get(Calendar.MINUTE);
+
+        final TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+                if (timePicker.isShown()) {
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    calendar.set(Calendar.MINUTE, minute);
+
+                    @SuppressLint("DefaultLocale")String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
+                    clientReminderTime = chosenTime;
+                }
+            }
+        };
+
+        final DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+
+                clientReminderDate = DateFormat.getDateInstance().format(calendar.getTime());
+
+                TimePickerDialog timePickerDialog = new TimePickerDialog(CreateEditAppointmentActivity.this, timeSetListener, hour, minute, false);
+                timePickerDialog.setCancelable(false);
+                timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        clientReminderSwitch.setChecked(false);
+                    }
+                });
+                timePickerDialog.show();
+            }
+        };
+
+        new AlertDialog.Builder(this)
+            .setTitle("Select how to send reminder to your client")
+            .setCancelable(false)
+            .setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int item) {
+                    if (item == 0) {
+                        SMS_REMINDER = true;
+                        EMAIL_REMINDER = false;
+                        BOTH_TYPES = false;
+
+                    } else if (item == 1) {
+                        SMS_REMINDER = false;
+                        EMAIL_REMINDER = true;
+                        BOTH_TYPES = false;
+
+                    } else if (item == 2) {
+                        SMS_REMINDER = false;
+                        EMAIL_REMINDER = false;
+                        BOTH_TYPES = true;
+
+                    } else {
+                        SMS_REMINDER = false;
+                        EMAIL_REMINDER = false;
+                        BOTH_TYPES = false;
+                    }
+                }
+            })
+            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if (SMS_REMINDER || EMAIL_REMINDER || BOTH_TYPES) {
+                        DatePickerDialog datePickerDialog = new DatePickerDialog(CreateEditAppointmentActivity.this,
+                                dateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                        datePickerDialog.setCancelable(false);
+                        datePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                clientReminderSwitch.setChecked(false);
+                            }
+                        });
+                        datePickerDialog.show();
+
+                    } else {
+                        Snackbar.make(coordinatorLayout, "Please select a method to send client reminder", Snackbar.LENGTH_LONG).show();
+                        clientReminderSwitch.setChecked(false);
+                    }
+                }
+            })
+            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                    clientReminderSwitch.setChecked(false);
+                }
+            })
+            .show();
+    }
+
+
 
     private void initToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
