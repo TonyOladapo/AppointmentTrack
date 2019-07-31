@@ -86,28 +86,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-//        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
-//                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-//            @Override
-//            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-//                return false;
-//            }
-//
-//            @Override
-//            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-//                Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
-//                        .setAction("Undo", new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View view) {
-//                                //undo delete
-//                            }
-//                        })
-//                        .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
-//                        .show();
-//                viewModel.delete(adapter.getAppointAt(viewHolder.getAdapterPosition()));
-//            }
-//        }).attachToRecyclerView(recyclerView);
-
         adapter.setOnItemClickListener(new AppointmentAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Appointments appointments) {
@@ -294,5 +272,11 @@ public class HomeFragment extends Fragment {
             background.draw(c);
             icon.draw(c);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Objects.requireNonNull(getActivity()).setTitle("AppointmentTrack");
     }
 }

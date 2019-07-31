@@ -4,20 +4,18 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.MotionEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.annotation.Nullable;
@@ -27,22 +25,24 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.oladapo.appointmenttrack.DatePickerFragment;
 import com.oladapo.appointmenttrack.R;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Objects;
 
-public class CreateEditAppointmentActivity extends AppCompatActivity {
+public class CreateEditAppointmentActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
 
+    private static final String TAG = "vkv";
     EditText nameEditText, phoneEditText, emailEditText, descEditText, dateEditText, timeEditText;
     TextInputLayout nameLayout, phoneLayout, emailLayout, descLayout, dateLayout, timeLayout;
-    Button submit;
+    MaterialButton submit;
     SwitchCompat reminderSwitch, clientReminderSwitch;
     CoordinatorLayout coordinatorLayout;
 
@@ -53,6 +53,10 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
     public static final String EXTRA_DESC = "desc";
     public static final String EXTRA_DATE = "date";
     public static final String EXTRA_TIME = "time";
+    public static final String EXTRA_REMINDER_DATE = "reminder_date";
+    public static final String EXTRA_REMINDER_TIME = "reminder_time";
+
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 10;
 
     String reminderDate;
     String reminderTime;
@@ -108,28 +112,14 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
 
         initToolbar();
 
-        final Calendar calendar = Calendar.getInstance();
 
-        final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-
-                String format = "dd MMM yy";
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.getDefault());
-                dateEditText.setText(simpleDateFormat.format(calendar.getTime()));
-            }
-        };
 
         dateEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (hasFocus) {
-                    new DatePickerDialog(CreateEditAppointmentActivity.this, date, calendar
-                            .get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-                            .show();
+                    DialogFragment datePicker = new DatePickerFragment();
+                    datePicker.show(getSupportFragmentManager(), "date picker");
                 }
             }
         });
@@ -143,323 +133,125 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
             }
         });
 
-        dateEditText.setOnClickListener(new View.OnClickListener() {
+        reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    reminderState = REMINDER_ON;
+
+                    reminderAlertDialog();
+                } else {
+                    reminderState = REMINDER_OFF;
+
+                    reminderDate = null;
+                    reminderTime = null;
+                }
+            }
+        });
+    }
+
+    private void reminderAlertDialog() {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View dialogView = inflater.inflate(R.layout.dialog_remider, (ViewGroup) findViewById(android.R.id.content), false);
+
+        dialog.setView(dialogView);
+
+        final SwitchCompat allDayReminderSwitch = dialogView.findViewById(R.id.reminderAllDaySwitch);
+        final TextView dateText = dialogView.findViewById(R.id.reminderDate);
+        final TextView timeText = dialogView.findViewById(R.id.reminderTime);
+
+        dateText.setClickable(true);
+        timeText.setClickable(true);
+
+        allDayReminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    timeText.setVisibility(View.GONE);
+                } else {
+                    timeText.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        final Calendar calendar = Calendar.getInstance();
+
+        final DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+
+                String chosenDate = DateFormat.getDateInstance().format(calendar.getTime());
+                dateText.setText(chosenDate);
+            }
+        };
+
+        dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new DatePickerDialog(CreateEditAppointmentActivity.this, date, calendar
+                new DatePickerDialog(dialogView.getContext(), dateSetListener, calendar
                         .get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
                         .show();
             }
         });
 
-        timeEditText.setOnClickListener(new View.OnClickListener() {
+        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        final int minute = calendar.get(Calendar.MINUTE);
+
+        final TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+                if (timePicker.isShown()) {
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    calendar.set(Calendar.MINUTE, minute);
+
+                    @SuppressLint("DefaultLocale")String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
+                    timeText.setText(chosenTime);
+                }
+            }
+        };
+
+        timeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pickTime();
+                TimePickerDialog timePickerDialog = new TimePickerDialog(dialogView.getContext(), timeSetListener, hour, minute, false);
+                timePickerDialog.setCanceledOnTouchOutside(false);
+                timePickerDialog.show();
             }
         });
 
-        reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if (isChecked) {
-
-                    reminderState = REMINDER_ON;
-
-                    final DatePickerDialog.OnDateSetListener clientReminderDate = new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                            calendar.set(Calendar.YEAR, year);
-                            calendar.set(Calendar.MONTH, month);
-                            calendar.set(Calendar.DAY_OF_MONTH, day);
-
-                            String format = "dd/MM/yy";
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.getDefault());
-                            reminderDate = simpleDateFormat.format(calendar.getTime());
-
-                            pickReminderTime();
-                        }
-                    };
-
-                    new DatePickerDialog(CreateEditAppointmentActivity.this,clientReminderDate, calendar
-                    .get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-                            .show();
-                } else {
-                    reminderState = REMINDER_OFF;
-                }
-            }
-        });
-
-        clientReminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if (isChecked) {
-                    clientReminderState = CLIENT_REMINDER_ON;
-
-                    remindClientAlertDialog();
-                } else {
-                    clientReminderState = CLIENT_REMINDER_OFF;
-                }
-            }
-        });
-
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                validateAndSubmitForm();
-            }
-        });
-    }
-
-    private void pickTime() {
-        final Calendar calendar = Calendar.getInstance();
-        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        final int minute = calendar.get(Calendar.MINUTE);
-
-        TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                if (timePicker.isShown()) {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute);
-
-                    @SuppressLint("DefaultLocale") String time = (String.format("%02d:%02d", hourOfDay, minute));
-                    timeEditText.setText(time);
-                }
-            }
-        };
-
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, listener, hour, minute, false);
-        timePickerDialog.show();
-    }
-
-    private void pickReminderTime() {
-        final Calendar calendar = Calendar.getInstance();
-        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        final int minute = calendar.get(Calendar.MINUTE);
-
-        TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
-            @SuppressLint("DefaultLocale")
-            @Override
-            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                if (timePicker.isShown()) {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute);
-
-                    reminderTime = String.format("%02d:%02d", hourOfDay, minute);
-                    Snackbar.make(coordinatorLayout, "Reminder set for " + reminderDate + " at " + reminderTime, Snackbar.LENGTH_LONG).show();
-                }
-            }
-        };
-
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, listener, hour, minute, false);
-        timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-                reminderSwitch.setChecked(false);
-            }
-        });
-        timePickerDialog.setCanceledOnTouchOutside(true);
-        timePickerDialog.show();
-    }
-
-    private void pickClientReminderTime() {
-        final Calendar calendar = Calendar.getInstance();
-        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        final int minute = calendar.get(Calendar.MINUTE);
-
-        TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
-            @SuppressLint("DefaultLocale")
-            @Override
-            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                if (timePicker.isShown()) {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute);
-
-                    clientReminderTime = String.format("%02d:%02d", hourOfDay, minute);
-                    Snackbar.make(coordinatorLayout, "Client reminder set for " + clientReminderDate + " at " + clientReminderTime, Snackbar.LENGTH_LONG).show();
-                }
-            }
-        };
-
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, listener, hour, minute, false);
-        timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-                clientReminderSwitch.setChecked(false);
-            }
-        });
-        timePickerDialog.setCanceledOnTouchOutside(true);
-        timePickerDialog.show();
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if ( v instanceof EditText) {
-                Rect outRect = new Rect();
-                v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
-                    v.clearFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-            }
-        }
-        return super.dispatchTouchEvent( event );
-    }
-
-    private void remindClientAlertDialog() {
-        final CharSequence[] items = {"SMS", "Email", "Both"};
-
-        new AlertDialog.Builder(this)
-                .setTitle("Select how to send reminder to your client")
-                .setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+        dialog.setCancelable(false)
+                .setTitle("Set reminder details")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int item) {
-                        if (item == 0) {
-                            SMS_REMINDER = true;
-                            remindClientDatePicker();
-                        } else if (item == 1) {
-                            EMAIL_REMINDER = true;
-                            remindClientDatePicker();
-                        } else if (item == 2) {
-                            BOTH_TYPES = true;
-                            remindClientDatePicker();
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (dateText.getText().toString().matches("Select date") || !allDayReminderSwitch.isChecked() && timeText.getText().toString().matches("Select time")) {
+                            Snackbar.make(coordinatorLayout, "Date and time is needed to set a reminder", Snackbar.LENGTH_LONG).show();
+                            reminderSwitch.setChecked(false);
+                        } else {
+                            reminderDate = dateText.getText().toString();
                         }
-                        dialogInterface.dismiss();
+
+                        if (!allDayReminderSwitch.isChecked() && !timeText.getText().toString().matches("Select time")) {
+                            reminderTime = timeText.getText().toString();
+                        }
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.cancel();
-                        clientReminderSwitch.setChecked(false);
+                        reminderSwitch.setChecked(false);
                     }
-                })
-        .show();
-    }
+                });
 
-    private void remindClientDatePicker() {
-        final Calendar calendar = Calendar.getInstance();
-
-        final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-
-                String format = "dd/MM/yy";
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.getDefault());
-                clientReminderDate = simpleDateFormat.format(calendar.getTime());
-
-                pickClientReminderTime();
-            }
-        };
-        new DatePickerDialog(CreateEditAppointmentActivity.this, date, calendar
-                .get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-                .show();
-    }
-
-    private void validateAndSubmitForm() {
-
-        String name = nameEditText.getText().toString();
-        String phone = phoneEditText.getText().toString();
-        String email = emailEditText.getText().toString();
-        String date = dateEditText.getText().toString();
-        String time = timeEditText.getText().toString();
-        String desc = descEditText.getText().toString();
-
-        SimpleDateFormat format = new SimpleDateFormat("dd MMM", Locale.getDefault());
-        Date today = new Date();
-
-        String dateAdded = format.format(today);
-
-        if (nameEditText.getText().toString().trim().isEmpty()) {
-            nameLayout.setError("Name is required");
-        } else {
-            nameLayout.setErrorEnabled(false);
-
-            if (dateEditText.getText().toString().trim().isEmpty()) {
-                dateLayout.setError("Date is required");
-
-            } else {
-                dateLayout.setErrorEnabled(false);
-
-                if (timeEditText.getText().toString().trim().isEmpty()) {
-                    timeLayout.setError("Time is required");
-
-                } else {
-                    dateLayout.setErrorEnabled(false);
-                    if (clientReminderState == CLIENT_REMINDER_ON && SMS_REMINDER) {
-
-                        if (phoneEditText.getText().toString().trim().isEmpty()) {
-                            phoneLayout.setError("Phone is required");
-
-                        } else {
-                            phoneLayout.setErrorEnabled(false);
-                            submitForm(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                                    clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded);
-                        }
-                    } else if (clientReminderState == CLIENT_REMINDER_ON && EMAIL_REMINDER) {
-
-                        if (emailEditText.getText().toString().trim().isEmpty()) {
-                            emailLayout.setError("Email is required");
-
-                        } else {
-                            emailLayout.setErrorEnabled(false);
-                            submitForm(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                                    clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded);
-                        }
-                    } else if (clientReminderState == CLIENT_REMINDER_ON && BOTH_TYPES) {
-
-                        if (emailEditText.getText().toString().trim().isEmpty() && phoneEditText.getText().toString().trim().isEmpty()) {
-                            emailLayout.setError("Email is required");
-                            phoneLayout.setError("Phone is required");
-
-                        } else {
-                            emailLayout.setErrorEnabled(false);
-                            phoneLayout.setErrorEnabled(false);
-                            submitForm(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                                    clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded);
-                        }
-                    } else {
-                        submitForm(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                                clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded);
-                    }
-                }
-            }
-        }
-    }
-
-    private void submitForm(String name, String phone, String email, String desc,
-                            String date, String time, String reminderDate, String reminderTime,
-                            String clientReminderDate, String clientReminderTime, int reminderState,
-                            int clientReminderState, String dateAdded) {
-        Intent intent = new Intent(CreateEditAppointmentActivity.this, MainActivity.class);
-        intent.putExtra("name", name);
-        intent.putExtra("phone", phone);
-        intent.putExtra("email", email);
-        intent.putExtra("desc", desc);
-        intent.putExtra("date", date);
-        intent.putExtra("time", time);
-        intent.putExtra("reminderDate", reminderDate);
-        intent.putExtra("reminderTime", reminderTime);
-        intent.putExtra("clientReminderDate", clientReminderDate);
-        intent.putExtra("clientReminderTime", clientReminderTime);
-        intent.putExtra("reminderState", reminderState);
-        intent.putExtra("clientReminderState", clientReminderState);
-        intent.putExtra("dateAdded", dateAdded);
-
-        int id = getIntent().getIntExtra(EXTRA_ID, -1);
-        if (id != -1) {
-            intent.putExtra(EXTRA_ID, id);
-        }
-
-        setResult(2, intent);
-        finish();
+        dialog.create().show();
     }
 
     private void initToolbar() {
@@ -491,8 +283,36 @@ public class CreateEditAppointmentActivity extends AppCompatActivity {
         });
     }
 
+    private void pickTime() {
+
+        final Calendar calendar = Calendar.getInstance();
+        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        final int minute = calendar.get(Calendar.MINUTE);
+
+        TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+                if (timePicker.isShown()) {
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    calendar.set(Calendar.MINUTE, minute);
+
+                    @SuppressLint("DefaultLocale")String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
+                    timeEditText.setText(chosenTime);
+                }
+            }
+        };
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, listener, hour, minute, false);
+        timePickerDialog.show();
+    }
+
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month);
+        calendar.set(Calendar.DAY_OF_MONTH, day);
+
+        String chosenDate = DateFormat.getDateInstance().format(calendar.getTime());
+        dateEditText.setText(chosenDate);
     }
 }

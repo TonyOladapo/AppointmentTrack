@@ -25,16 +25,16 @@
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
         android:orientation="vertical"
-        android:paddingLeft="20dp"
-        android:paddingTop="20dp"
-        android:paddingRight="20dp">
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_name"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_name"
@@ -48,10 +48,10 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_phone"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_phone"
@@ -65,10 +65,10 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_email"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_email"
@@ -82,10 +82,10 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_desc"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_desc"
@@ -98,10 +98,10 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_date"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_date"
@@ -116,7 +116,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_time"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp">
@@ -151,16 +151,17 @@
             android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp" />
 
-        <Button
-            android:id="@+id/submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="40dp"
-            android:background="@color/colorPrimaryDark"
-            android:text="@string/done"
-            android:textColor="@android:color/white" />
-
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/done"
+        android:theme="@style/MatButton"
+        app:cornerRadius="5dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

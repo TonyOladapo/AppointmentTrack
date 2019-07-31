@@ -42,6 +42,9 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
+    //workManager
+    implementation "androidx.work:work-runtime:2.2.0-beta02"
+
     //materialDrawer
     implementation 'com.mikepenz:materialdrawer:6.1.2'
 
@@ -51,8 +54,8 @@ dependencies {
     //waterfallToolbar
     implementation 'com.github.hugocastelani:waterfall-toolbar:0.5.0'
 
-    //nightOwl
-    implementation 'com.asha.nightowllib:nightowllib:0.2'
+    //materialSpinner
+    implementation 'com.jaredrummler:material-spinner:1.3.1'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'

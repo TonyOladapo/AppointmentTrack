@@ -4,6 +4,7 @@
     package="com.oladapo.appointmenttrack">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -27,6 +28,9 @@
 
         <activity android:name=".Activities.CreateEditAppointmentActivity"
             tools:ignore="InnerclassSeparator" />
+
+        <service android:name=".Utils.ExampleJobScheduler"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

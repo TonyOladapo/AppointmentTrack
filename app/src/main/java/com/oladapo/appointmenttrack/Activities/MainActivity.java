@@ -266,66 +266,72 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initDrawer() {
+
         AccountHeader header = new AccountHeaderBuilder()
+                .withCompactStyle(true)
                 .withActivity(this)
-                .withHeaderBackground(R.drawable.header_background)
                 .withTranslucentStatusBar(true)
-                .withCurrentProfileHiddenInList(false)
+                .withHeaderBackground(R.drawable.header_background)
                 .build();
 
         login = new PrimaryDrawerItem()
                 .withName("Login")
                 .withIdentifier(1)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedColorRes(R.color.colorLight);
 
         PrimaryDrawerItem home = new PrimaryDrawerItem()
                 .withName("Home")
                 .withIdentifier(2)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedColorRes(R.color.colorLight)
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withIcon(R.drawable.ic_home_black_24dp);
 
         PrimaryDrawerItem calender = new PrimaryDrawerItem()
                 .withName("Calender")
                 .withIdentifier(3)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedColorRes(R.color.colorLight)
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withIcon(R.drawable.ic_calender_black_24dp);
 
         PrimaryDrawerItem reminders = new PrimaryDrawerItem()
                 .withName("Reminders")
                 .withIdentifier(4)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedColorRes(R.color.colorLight)
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withIcon(R.drawable.ic_access_alarm_black_24dp);
 
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withName("Settings")
                 .withIdentifier(5)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedColorRes(R.color.colorLight)
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withIcon(R.drawable.ic_settings_black_24dp);
 
         PrimaryDrawerItem about = new PrimaryDrawerItem()
                 .withName("About")
                 .withIdentifier(6)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedColorRes(R.color.colorLight)
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withIcon(R.drawable.ic_info_outline_black_24dp);
 
         logout = new PrimaryDrawerItem()
                 .withName("Logout")
                 .withIdentifier(7)
                 .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimary)
-                .withSelectedColorRes(R.color.colorPrimaryDark);
+                .withSelectedTextColorRes(R.color.colorPrimaryDark)
+                .withSelectedColorRes(R.color.colorLight);
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
-                .withToolbar(toolbar)
                 .withAccountHeader(header)
+                .withToolbar(toolbar)
                 .addDrawerItems(
                         home,
                         calender,
