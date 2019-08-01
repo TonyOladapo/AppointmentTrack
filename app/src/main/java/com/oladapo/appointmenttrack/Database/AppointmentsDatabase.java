@@ -13,7 +13,7 @@ public abstract class AppointmentsDatabase extends RoomDatabase {
 
     public abstract DAO appointmentsDao();
 
-    public static synchronized AppointmentsDatabase getInstance(Context context) {
+    static synchronized AppointmentsDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     AppointmentsDatabase.class, "appointments_database")

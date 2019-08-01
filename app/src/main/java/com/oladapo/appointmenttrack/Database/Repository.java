@@ -7,34 +7,34 @@ import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
-public class Repository {
+class Repository {
 
     private DAO dao;
     private LiveData<List<Appointments>>allAppointments;
 
-    public Repository(Application application) {
+    Repository(Application application) {
         AppointmentsDatabase database = AppointmentsDatabase.getInstance(application);
         dao = database.appointmentsDao();
         allAppointments = dao.getAllAppointments();
     }
 
-    public void insert(Appointments appointments) {
+    void insert(Appointments appointments) {
         new InsertAppointmentsAsyncTask(dao).execute(appointments);
     }
 
-    public void update(Appointments appointments) {
+    void update(Appointments appointments) {
         new UpdateAppointmentsAsyncTask(dao).execute(appointments);
     }
 
-    public void delete(Appointments appointments) {
+    void delete(Appointments appointments) {
         new DeleteAppointmentsAsyncTask(dao).execute(appointments);
     }
 
-    public void deleteAllAppointments() {
+    void deleteAllAppointments() {
         new DeleteAllAppointmentsAsyncTask(dao).execute();
     }
 
-    public LiveData<List<Appointments>> getAllAppointments() {
+    LiveData<List<Appointments>> getAllAppointments() {
         return allAppointments;
     }
 

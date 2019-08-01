@@ -117,17 +117,17 @@ public class HomeFragment extends Fragment {
             String time = data.getStringExtra("time");
             String reminderDate = data.getStringExtra("reminderDate");
             String reminderTime = data.getStringExtra("reminderTime");
-            int clientReminderTime = 2;
-//                    String clientReminderDate = data.getStringExtra("clientReminderDate");
-//                    String clientReminderTime = data.getStringExtra("clientReminderTime");
+            String clientReminderDate = data.getStringExtra("clientReminderDate");
+            String clientReminderTime = data.getStringExtra("clientReminderTime");
             int reminderState = data.getIntExtra("reminderState", 0);
             int clientReminderState = data.getIntExtra("clientReminderState", 0);
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
+            int allDayState = data.getIntExtra("allDayState", 0);
 
             Appointments appointments = new Appointments(name, phone, email, desc, date, time,
                     reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderTime, reminderMessage, dateAdded);
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState);
 
             viewModel.insert(appointments);
 
@@ -148,17 +148,17 @@ public class HomeFragment extends Fragment {
             String time = data.getStringExtra("time");
             String reminderDate = data.getStringExtra("reminderDate");
             String reminderTime = data.getStringExtra("reminderTime");
-            int clientReminderTime = 2;
-//                    String clientReminderDate = data.getStringExtra("clientReminderDate");
-//                    String clientReminderTime = data.getStringExtra("clientReminderTime");
+            String clientReminderDate = data.getStringExtra("clientReminderDate");
+            String clientReminderTime = data.getStringExtra("clientReminderTime");
             int reminderState = data.getIntExtra("reminderState", 0);
             int clientReminderState = data.getIntExtra("clientReminderState", 0);
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
+            int allDayState = data.getIntExtra("allDayState", 0);
 
             Appointments appointments = new Appointments(name, phone, email, desc, date, time,
                     reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderTime, reminderMessage, dateAdded);
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState);
 
             appointments.setId(id);
 

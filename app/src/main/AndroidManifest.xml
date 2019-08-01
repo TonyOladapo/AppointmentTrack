@@ -4,7 +4,8 @@
     package="com.oladapo.appointmenttrack">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
 
     <application
         android:allowBackup="true"
@@ -30,7 +31,8 @@
             tools:ignore="InnerclassSeparator" />
 
         <service android:name=".Utils.ExampleJobScheduler"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            tools:ignore="InnerclassSeparator" />
     </application>
 
 </manifest>

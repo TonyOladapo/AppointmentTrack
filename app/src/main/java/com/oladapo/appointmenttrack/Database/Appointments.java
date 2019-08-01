@@ -18,11 +18,13 @@ public class Appointments {
     private String reminderTime;
     private int reminderState;
     private int clientReminderState;
-    private int clientReminderTime;
+    private String clientReminderDate;
+    private String clientReminderTime;
     private String clientReminderMessage;
     private String dateAdded;
+    private int allDayState;
 
-    public Appointments(String clientName, String clientPhone, String clientEmail, String description, String date, String time, String reminderDate, String reminderTime, int reminderState, int clientReminderState, int clientReminderTime, String clientReminderMessage, String dateAdded) {
+    public Appointments(String clientName, String clientPhone, String clientEmail, String description, String date, String time, String reminderDate, String reminderTime, int reminderState, int clientReminderState, String clientReminderDate, String  clientReminderTime, String clientReminderMessage, String dateAdded, int allDayState) {
         this.clientName = clientName;
         this.clientPhone = clientPhone;
         this.clientEmail = clientEmail;
@@ -33,9 +35,11 @@ public class Appointments {
         this.reminderTime = reminderTime;
         this.reminderState = reminderState;
         this.clientReminderState = clientReminderState;
+        this.clientReminderDate = clientReminderDate;
         this.clientReminderTime = clientReminderTime;
         this.clientReminderMessage = clientReminderMessage;
         this.dateAdded = dateAdded;
+        this.allDayState = allDayState;
     }
 
     public void setId(int id) {
@@ -86,8 +90,12 @@ public class Appointments {
         return clientReminderState;
     }
 
-    public int getClientReminderTime() {
+    public String getClientReminderTime() {
         return clientReminderTime;
+    }
+
+    public String getClientReminderDate() {
+        return clientReminderDate;
     }
 
     public String getClientReminderMessage() {
@@ -96,5 +104,9 @@ public class Appointments {
 
     public String getDateAdded() {
         return dateAdded;
+    }
+
+    public int getAllDayState() {
+        return allDayState;
     }
 }
