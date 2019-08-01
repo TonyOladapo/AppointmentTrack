@@ -23,8 +23,15 @@ public class Appointments {
     private String clientReminderMessage;
     private String dateAdded;
     private int allDayState;
+    private boolean sms;
+    private boolean email;
+    private boolean both;
 
-    public Appointments(String clientName, String clientPhone, String clientEmail, String description, String date, String time, String reminderDate, String reminderTime, int reminderState, int clientReminderState, String clientReminderDate, String  clientReminderTime, String clientReminderMessage, String dateAdded, int allDayState) {
+    public Appointments(String clientName, String clientPhone, String clientEmail,
+                        String description, String date, String time, String reminderDate,
+                        String reminderTime, int reminderState, int clientReminderState,
+                        String clientReminderDate, String  clientReminderTime, String clientReminderMessage,
+                        String dateAdded, int allDayState, boolean sms, boolean email, boolean both) {
         this.clientName = clientName;
         this.clientPhone = clientPhone;
         this.clientEmail = clientEmail;
@@ -40,6 +47,9 @@ public class Appointments {
         this.clientReminderMessage = clientReminderMessage;
         this.dateAdded = dateAdded;
         this.allDayState = allDayState;
+        this.sms = sms;
+        this.email = email;
+        this.both = both;
     }
 
     public void setId(int id) {
@@ -108,5 +118,17 @@ public class Appointments {
 
     public int getAllDayState() {
         return allDayState;
+    }
+
+    public boolean isSms() {
+        return sms;
+    }
+
+    public boolean isEmail() {
+        return email;
+    }
+
+    public boolean isBoth() {
+        return both;
     }
 }

@@ -97,6 +97,17 @@ public class HomeFragment extends Fragment {
                 intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE, appointments.getDate());
                 intent.putExtra(CreateEditAppointmentActivity.EXTRA_TIME, appointments.getTime());
                 intent.putExtra(CreateEditAppointmentActivity.EXTRA_DESC, appointments.getDescription());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_DATE, appointments.getReminderDate());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_TIME, appointments.getReminderTime());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_DATE, appointments.getClientReminderDate());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_TIME, appointments.getClientReminderTime());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_MESSAGE, appointments.getClientReminderMessage());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_STATE, appointments.getReminderState());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_STATE, appointments.getClientReminderState());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_ALL_DAY_STATE, appointments.getAllDayState());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_SMS_REMINDER, appointments.isSms());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
+                intent.putExtra(CreateEditAppointmentActivity.EXTRA_BOTH, appointments.isBoth());
 
                 startActivityForResult(intent, RC_EDIT_CLIENT);
             }
@@ -124,10 +135,14 @@ public class HomeFragment extends Fragment {
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
             int allDayState = data.getIntExtra("allDayState", 0);
+            boolean isSms = data.getBooleanExtra("is_sms", false);
+            boolean isEmail = data.getBooleanExtra("is_email", false);
+            boolean isBoth = data.getBooleanExtra("is_both", false);
 
             Appointments appointments = new Appointments(name, phone, email, desc, date, time,
                     reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState);
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
+                    isSms, isEmail, isBoth);
 
             viewModel.insert(appointments);
 
@@ -155,10 +170,14 @@ public class HomeFragment extends Fragment {
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
             int allDayState = data.getIntExtra("allDayState", 0);
+            boolean isSms = data.getBooleanExtra("is_sms", false);
+            boolean isEmail = data.getBooleanExtra("is_email", false);
+            boolean isBoth = data.getBooleanExtra("is_both", false);
 
             Appointments appointments = new Appointments(name, phone, email, desc, date, time,
                     reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState);
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
+                    isSms, isEmail, isBoth);
 
             appointments.setId(id);
 
