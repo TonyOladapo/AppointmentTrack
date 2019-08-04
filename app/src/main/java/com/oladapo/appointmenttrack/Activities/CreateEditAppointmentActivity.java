@@ -1,6 +1,5 @@
 package com.oladapo.appointmenttrack.Activities;
 
-import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
@@ -22,7 +21,6 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,7 +53,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class CreateEditAppointmentActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,
         EasyPermissions.PermissionCallbacks {
 
-    private static final String TAG = "vkv";
     EditText nameEditText, phoneEditText, emailEditText, descEditText, dateEditText, timeEditText;
     TextInputLayout nameLayout, phoneLayout, emailLayout, descLayout, dateLayout, timeLayout;
     MaterialButton submit;
@@ -543,97 +540,132 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         String dateAdded = format.format(today);
 
-        if (name.isEmpty() || date.isEmpty() || time.isEmpty()) {
+        boolean basicDataIsAvailable = false;
+        boolean reminderDataIsAvailable = false;
+        boolean clientReminderDataIsAvailable = false;
+
+        if (!name.isEmpty() && !date.isEmpty() && !time.isEmpty()) {
+            nameLayout.setErrorEnabled(false);
+            dateLayout.setErrorEnabled(false);
+            timeLayout.setErrorEnabled(false);
+
+            basicDataIsAvailable = true;
+
+        } else {
             if (name.isEmpty()) {
                 nameLayout.setError("Name is required");
-            } else {
-                nameLayout.setErrorEnabled(false);
             }
             if (date.isEmpty()) {
                 dateLayout.setError("Date is required");
-            } else {
-                dateLayout.setErrorEnabled(false);
             }
             if (time.isEmpty()) {
                 timeLayout.setError("Time is required");
-            } else {
-                timeLayout.setErrorEnabled(false);
             }
+        }
 
-        } else {
-             if (reminderState == REMINDER_ON || clientReminderState == CLIENT_REMINDER_ON) {
-                if (reminderState == REMINDER_ON) {
-                    if (!reminderDate.matches("Select date")) {
-                        if (allDayState == ALL_DAY_STATE_ON) {
-                            //add to calendar with all day on
-                            Toast.makeText(this, "add to calendar with all day on", Toast.LENGTH_SHORT).show();
+        if (basicDataIsAvailable && reminderState == REMINDER_ON) {
+            if (!reminderDate.matches("Select date") && reminderDate != null) {
+                if (allDayState == ALL_DAY_STATE_ON) {
+                    // TODO: add to calender with all day on
+                    reminderDataIsAvailable = true;
 
-                        } else {
-                            if (!reminderTime.matches("Select time")) {
-                                //add to calendar with all day off
-                                Toast.makeText(this, "add to calendar with all day off", Toast.LENGTH_SHORT).show();
-                            }
-                        }
+                } else if (allDayState == ALL_DAY_STATE_OFF) {
+                    if (!reminderTime.matches("Select time") && reminderTime != null) {
+                        // TODO: add to calender with all day off
+                        reminderDataIsAvailable = true;
+
                     }
                 }
-                if (clientReminderState == CLIENT_REMINDER_ON) {
-                    if (SMS_REMINDER) {
-                        if (phone.isEmpty()) {
-                            phoneEditText.setError("Client phone number is needed to send SMS reminder");
-                        } else {
-                            phoneLayout.setErrorEnabled(false);
-                            //schedule client reminder
-                        }
-                    } else if (EMAIL_REMINDER) {
-                        if (email.isEmpty()) {
-                            emailEditText.setError("Client email is needed to send email reminder");
-                        } else {
-                            emailLayout.setErrorEnabled(false);
-                            //schedule client reminder
-                        }
-                    } else if (BOTH_TYPES) {
-                        if (email.isEmpty() || phone.isEmpty()) {
-                            if (phone.isEmpty()) {
-                                phoneEditText.setError("Client phone number is needed to send SMS reminder");
+            }
+        }
 
-                            } else {
-                                phoneLayout.setErrorEnabled(false);
-                            }
-                            if (email.isEmpty()) {
-                                emailEditText.setError("Client email is needed to send email reminder");
-                            } else  {
-                                emailLayout.setErrorEnabled(false);
-                            }
+        if (basicDataIsAvailable && clientReminderState == CLIENT_REMINDER_ON) {
 
-                        } else {
-                            //schedule client reminder
-                            Toast.makeText(this, "schedule client reminder", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+            if (SMS_REMINDER) {
+                if (phone.isEmpty()) {
+                    phoneEditText.setError("Client phone number is needed to send SMS reminder");
+                } else {
+                    phoneLayout.setErrorEnabled(false);
+                    // TODO: schedule client reminder
+                    clientReminderDataIsAvailable = true;
+
                 }
-             }
-             addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                     clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
-                     allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+
+            } else if (EMAIL_REMINDER) {
+                if (email.isEmpty()) {
+                    emailEditText.setError("Client email is needed to send email reminder");
+                } else {
+                    emailLayout.setErrorEnabled(false);
+                    // TODO: schedule client reminder
+                    clientReminderDataIsAvailable = true;
+                }
+
+            } else if (BOTH_TYPES) {
+                if (email.isEmpty() || phone.isEmpty()) {
+                    if (phone.isEmpty()) {
+                        phoneEditText.setError("Client phone number is needed to send SMS reminder");
+
+                    } else {
+                        phoneLayout.setErrorEnabled(false);
+                    }
+                    if (email.isEmpty()) {
+                        emailEditText.setError("Client email is needed to send email reminder");
+                    } else {
+                        emailLayout.setErrorEnabled(false);
+                    }
+
+                } else {
+                    // TODO: schedule client reminder
+                    clientReminderDataIsAvailable = true;
+                }
+            }
+        }
+
+        if (basicDataIsAvailable) {
+            if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_ON) {
+                if (reminderDataIsAvailable && clientReminderDataIsAvailable) {
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
+                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                }
+
+            } else if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_OFF) {
+                if (reminderDataIsAvailable) {
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
+                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                }
+
+            } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_ON) {
+                if (clientReminderDataIsAvailable) {
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
+                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                }
+
+            } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_OFF) {
+                addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
+                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
+                        allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+            }
         }
     }
 
-    @AfterPermissionGranted(MY_PERMISSIONS_REQUEST_WRITE_CALENDAR)
-    private void checkForCalendarPermission() {
-        String[] perms = {Manifest.permission.WRITE_CALENDAR};
-
-        if (EasyPermissions.hasPermissions(this, perms)) {
-            //include reminder details here
-//            addReminderToCalendar();
-        } else {
-            EasyPermissions.requestPermissions(this, "Permission is required to add reminder to calendar",
-                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR, perms);
-        }
-    }
-
-    private void scheduleClientReminder() {
-
-    }
+//    @AfterPermissionGranted(MY_PERMISSIONS_REQUEST_WRITE_CALENDAR)
+//    private void checkForCalendarPermission() {
+//        String[] perms = {Manifest.permission.WRITE_CALENDAR};
+//
+//        if (EasyPermissions.hasPermissions(this, perms)) {
+//
+//        } else {
+//            EasyPermissions.requestPermissions(this, "Permission is required to add reminder to calendar",
+//                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR, perms);
+//        }
+//    }
+//
+//    private void scheduleClientReminder() {
+//
+//    }
 
     private void addFormDataToIntent(String name, String phone, String email, String desc,
                                      String date, String time, String reminderDate, String reminderTime,

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.oladapo.appointmenttrack.Activities.AppointmentDetailsActivity;
 import com.oladapo.appointmenttrack.Activities.CreateEditAppointmentActivity;
 import com.oladapo.appointmenttrack.Adapters.AppointmentAdapter;
 import com.oladapo.appointmenttrack.Database.Appointments;
@@ -40,7 +41,7 @@ public class HomeFragment extends Fragment {
     private TextView noAppointmentsTextView;
 
     private static final int RC_ADD_CLIENT = 2;
-    private static final int RC_EDIT_CLIENT = 3;
+    private static final int RC_APPOINTMENT_DETAILS = 3;
 
     @Nullable
     @Override
@@ -89,27 +90,27 @@ public class HomeFragment extends Fragment {
         adapter.setOnItemClickListener(new AppointmentAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Appointments appointments) {
-                Intent intent = new Intent(getContext(), CreateEditAppointmentActivity.class);
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_ID, appointments.getId());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_NAME, appointments.getClientName());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_PHONE, appointments.getClientPhone());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL, appointments.getClientEmail());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE, appointments.getDate());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_TIME, appointments.getTime());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_DESC, appointments.getDescription());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_DATE, appointments.getReminderDate());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_TIME, appointments.getReminderTime());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_DATE, appointments.getClientReminderDate());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_TIME, appointments.getClientReminderTime());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_MESSAGE, appointments.getClientReminderMessage());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_STATE, appointments.getReminderState());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_STATE, appointments.getClientReminderState());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_ALL_DAY_STATE, appointments.getAllDayState());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_SMS_REMINDER, appointments.isSms());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
-                intent.putExtra(CreateEditAppointmentActivity.EXTRA_BOTH, appointments.isBoth());
+                Intent intent = new Intent(getContext(), AppointmentDetailsActivity.class);
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_ID, appointments.getId());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_NAME, appointments.getClientName());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_PHONE, appointments.getClientPhone());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_EMAIL, appointments.getClientEmail());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE, appointments.getDate());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_TIME, appointments.getTime());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_DESC, appointments.getDescription());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_DATE, appointments.getReminderDate());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_TIME, appointments.getReminderTime());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_DATE, appointments.getClientReminderDate());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_TIME, appointments.getClientReminderTime());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_MESSAGE, appointments.getClientReminderMessage());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_STATE, appointments.getReminderState());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_STATE, appointments.getClientReminderState());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_ALL_DAY_STATE, appointments.getAllDayState());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_SMS_REMINDER, appointments.isSms());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_BOTH, appointments.isBoth());
 
-                startActivityForResult(intent, RC_EDIT_CLIENT);
+                startActivityForResult(intent, RC_APPOINTMENT_DETAILS);
             }
         });
     }
@@ -147,7 +148,7 @@ public class HomeFragment extends Fragment {
             viewModel.insert(appointments);
 
             Snackbar.make(Objects.requireNonNull(getView()), "Appointment added", Snackbar.LENGTH_LONG).show();
-        } else if (requestCode == RC_EDIT_CLIENT && resultCode == 2) {
+        } else if (requestCode == RC_APPOINTMENT_DETAILS && resultCode == 2) {
             int id = data.getIntExtra(CreateEditAppointmentActivity.EXTRA_ID, -1);
 
             if (id == -1) {
@@ -219,7 +220,7 @@ public class HomeFragment extends Fragment {
         private final ColorDrawable background;
 
         SwipeToDeleteCallback(AppointmentAdapter adapter) {
-            super(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+            super(0,ItemTouchHelper.LEFT);
             mAdapter = adapter;
             icon = ContextCompat.getDrawable(Objects.requireNonNull(getContext()),
                     R.drawable.ic_delete_white_24dp);
@@ -232,30 +233,25 @@ public class HomeFragment extends Fragment {
         }
 
         @Override
-        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
             viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
             viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
                 @Override
                 public void onChanged(List<Appointments> appointments) {
-                    if (viewModel.getAllAppointments() == null) {
-                        noAppointmentsTextView.setVisibility(View.VISIBLE);
-                    } else {
-                        mAdapter.submitList(appointments);
-                    }
+                    mAdapter.submitList(appointments);
                 }
             });
 
             Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
-                        .setAction("Undo", new View.OnClickListener() {
+                        .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                //undo delete
+
                             }
                         })
                         .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
                         .show();
-
             viewModel.delete(mAdapter.getAppointAt(viewHolder.getAdapterPosition()));
         }
 
@@ -269,15 +265,7 @@ public class HomeFragment extends Fragment {
             int iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
             int iconBottom = iconTop + icon.getIntrinsicHeight();
 
-            if (dX > 0) { // Swiping to the right
-                int iconLeft = itemView.getLeft() + iconMargin + icon.getIntrinsicWidth();
-                int iconRight = itemView.getLeft() + iconMargin;
-                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-
-                background.setBounds(itemView.getLeft(), itemView.getTop(),
-                        itemView.getLeft() + ((int) dX) + backgroundCornerOffset,
-                        itemView.getBottom());
-            } else if (dX < 0) { // Swiping to the left
+            if (dX < 0) { // Swiping to the left
                 int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
                 int iconRight = itemView.getRight() - iconMargin;
                 icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);

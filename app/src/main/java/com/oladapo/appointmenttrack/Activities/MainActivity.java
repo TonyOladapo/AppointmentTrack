@@ -135,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
                                             }
                                         }, 3000);
                                     } else {
-                                        Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
                                         if (drawer.getDrawerItem(1) == null) {
                                             drawer.addItem(login);
                                         }
