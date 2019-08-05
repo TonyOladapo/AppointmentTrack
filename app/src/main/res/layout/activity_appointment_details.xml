@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinatorAppDetails"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary">
@@ -28,12 +29,12 @@
             android:id="@+id/clientNameDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:padding="20dp"
+            android:layout_marginBottom="20dp"
             android:gravity="center"
+            android:padding="20dp"
+            android:text="@string/app_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:textColor="@color/colorPrimaryDark"
-            android:layout_marginBottom="20dp"/>
+            android:textColor="@color/colorPrimaryDark" />
 
         <LinearLayout
             android:id="@+id/contactLinearLayout"

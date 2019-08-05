@@ -28,7 +28,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -57,7 +56,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     TextInputLayout nameLayout, phoneLayout, emailLayout, descLayout, dateLayout, timeLayout;
     MaterialButton submit;
     SwitchCompat reminderSwitch, clientReminderSwitch;
-    CoordinatorLayout coordinatorLayout;
+    ConstraintLayout constraintLayout;
 
     public static final String EXTRA_ID = "id";
     public static final String EXTRA_CLIENT_NAME = "name";
@@ -116,7 +115,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
         }
 
-        coordinatorLayout = findViewById(R.id.createAppCoordinator);
+        constraintLayout = findViewById(R.id.editAppointmentConstraint);
         nameEditText = findViewById(R.id.input_name);
         phoneEditText = findViewById(R.id.input_phone);
         emailEditText = findViewById(R.id.input_email);
@@ -315,7 +314,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (dateText.getText().toString().matches("Select date") || !allDayReminderSwitch.isChecked() && timeText.getText().toString().matches("Select time")) {
-                            Snackbar.make(coordinatorLayout, "Date and time is needed to set a reminder", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(constraintLayout, "Date and time is needed to set a reminder", Snackbar.LENGTH_LONG).show();
                             reminderSwitch.setChecked(false);
                         } else {
                             reminderDate = dateText.getText().toString();
@@ -424,7 +423,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                             datePickerDialog.show();
 
                         } else {
-                            Snackbar.make(coordinatorLayout, "Please select a method to send client reminder", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(constraintLayout, "Please select a method to send client reminder", Snackbar.LENGTH_LONG).show();
                             clientReminderSwitch.setChecked(false);
                         }
                     }
@@ -690,7 +689,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         intent.putExtra("is_sms", isSms);
         intent.putExtra("is_email", isEmail);
         intent.putExtra("is_both", isBoth);
-
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {

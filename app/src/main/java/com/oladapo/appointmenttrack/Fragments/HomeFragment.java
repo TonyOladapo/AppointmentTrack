@@ -148,43 +148,6 @@ public class HomeFragment extends Fragment {
             viewModel.insert(appointments);
 
             Snackbar.make(Objects.requireNonNull(getView()), "Appointment added", Snackbar.LENGTH_LONG).show();
-        } else if (requestCode == RC_APPOINTMENT_DETAILS && resultCode == 2) {
-            int id = data.getIntExtra(CreateEditAppointmentActivity.EXTRA_ID, -1);
-
-            if (id == -1) {
-                Snackbar.make(Objects.requireNonNull(getView()), "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
-                return;
-            }
-
-            String name = data.getStringExtra("name");
-            String phone = data.getStringExtra("phone");
-            String email = data.getStringExtra("email");
-            String desc = data.getStringExtra("desc");
-            String date = data.getStringExtra("date");
-            String time = data.getStringExtra("time");
-            String reminderDate = data.getStringExtra("reminderDate");
-            String reminderTime = data.getStringExtra("reminderTime");
-            String clientReminderDate = data.getStringExtra("clientReminderDate");
-            String clientReminderTime = data.getStringExtra("clientReminderTime");
-            int reminderState = data.getIntExtra("reminderState", 0);
-            int clientReminderState = data.getIntExtra("clientReminderState", 0);
-            String reminderMessage = "message";
-            String dateAdded = data.getStringExtra("dateAdded");
-            int allDayState = data.getIntExtra("allDayState", 0);
-            boolean isSms = data.getBooleanExtra("is_sms", false);
-            boolean isEmail = data.getBooleanExtra("is_email", false);
-            boolean isBoth = data.getBooleanExtra("is_both", false);
-
-            Appointments appointments = new Appointments(name, phone, email, desc, date, time,
-                    reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
-                    isSms, isEmail, isBoth);
-
-            appointments.setId(id);
-
-            viewModel.update(appointments);
-
-            Snackbar.make(Objects.requireNonNull(getView()), "Appointment updated", Snackbar.LENGTH_LONG).show();
         }
     }
 

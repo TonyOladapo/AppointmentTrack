@@ -10,14 +10,22 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.oladapo.appointmenttrack.Database.Appointments;
+import com.oladapo.appointmenttrack.Database.ViewModel;
 import com.oladapo.appointmenttrack.R;
 
+import java.util.List;
 import java.util.Objects;
 
-public class AppointmentDetailsActivity extends AppCompatActivity {
+public class AppointmentDetailsActivity extends AppCompatActivity implements LifecycleObserver {
 
     public static final String EXTRA_ID = "id";
     public static final String EXTRA_CLIENT_NAME = "name";
@@ -73,10 +81,16 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     FloatingActionButton fabAddEditReminder;
     FloatingActionButton fabAddEditClientReminder;
 
+    CoordinatorLayout coordinatorLayout;
+
+    ViewModel viewModel;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_details);
+
+        coordinatorLayout = findViewById(R.id.coordinatorAppDetails);
 
         clientNameTextView = findViewById(R.id.clientNameDetails);
         phoneTextView = findViewById(R.id.phoneDetails);
@@ -114,6 +128,8 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.appointment_details_toolbar);
         setSupportActionBar(toolbar);
+
+        viewModel = ViewModelProviders.of(this).get(ViewModel.class);
 
         Intent intent = getIntent();
 
@@ -163,6 +179,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     }
 
     private void startEditAppointment() {
+
         Intent intent = new Intent(AppointmentDetailsActivity.this, CreateEditAppointmentActivity.class);
 
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_ID, id);
@@ -188,11 +205,53 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_EDIT_CLIENT && resultCode == RESULT_OK) {
+            int id = Objects.requireNonNull(data).getIntExtra(CreateEditAppointmentActivity.EXTRA_ID, -1);
 
+            if (id == -1) {
+                Snackbar.make(coordinatorLayout, "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
+                return;
+            }
+
+            final String name = data.getStringExtra("name");
+            String phone = data.getStringExtra("phone");
+            String email = data.getStringExtra("email");
+            String desc = data.getStringExtra("desc");
+            String date = data.getStringExtra("date");
+            String time = data.getStringExtra("time");
+            String reminderDate = data.getStringExtra("reminderDate");
+            String reminderTime = data.getStringExtra("reminderTime");
+            String clientReminderDate = data.getStringExtra("clientReminderDate");
+            String clientReminderTime = data.getStringExtra("clientReminderTime");
+            int reminderState = data.getIntExtra("reminderState", 0);
+            int clientReminderState = data.getIntExtra("clientReminderState", 0);
+            String reminderMessage = "message";
+            String dateAdded = data.getStringExtra("dateAdded");
+            int allDayState = data.getIntExtra("allDayState", 0);
+            boolean isSms = data.getBooleanExtra("is_sms", false);
+            boolean isEmail = data.getBooleanExtra("is_email", false);
+            boolean isBoth = data.getBooleanExtra("is_both", false);
+
+            Appointments appointments = new Appointments(name, phone, email, desc, date, time,
+                    reminderDate, reminderTime, reminderState, clientReminderState,
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
+                    isSms, isEmail, isBoth);
+
+            viewModel.getAllAppointments().observe(this, new Observer<List<Appointments>>() {
+                @Override
+                public void onChanged(List<Appointments> appointments) {
+                    clientNameTextView.setText(name);
+                }
+            });
+
+            appointments.setId(id);
+
+            viewModel.update(appointments);
+
+            Snackbar.make(coordinatorLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
         }
     }
 }
