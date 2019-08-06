@@ -4,13 +4,15 @@ import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.Observer;
@@ -70,18 +72,18 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
 
     private boolean isFabOpen;
 
-    TextView phoneTextView;
-    TextView emailTextView;
-    TextView descTextView;
-    TextView dateTextView;
-    TextView timeTextView;
+    EditText phoneTextView;
+    EditText emailTextView;
+    EditText descTextView;
+    EditText dateTextView;
+    EditText timeTextView;
     TextView clientNameTextView;
 
     FloatingActionButton fabMain;
     FloatingActionButton fabAddEditReminder;
     FloatingActionButton fabAddEditClientReminder;
 
-    CoordinatorLayout coordinatorLayout;
+    ConstraintLayout constraintLayout;
 
     ViewModel viewModel;
 
@@ -90,7 +92,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_details);
 
-        coordinatorLayout = findViewById(R.id.coordinatorAppDetails);
+        constraintLayout = findViewById(R.id.layoutAppointmentDetails);
 
         clientNameTextView = findViewById(R.id.clientNameDetails);
         phoneTextView = findViewById(R.id.phoneDetails);
@@ -98,6 +100,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         descTextView = findViewById(R.id.descDetails);
         dateTextView = findViewById(R.id.dateDetails);
         timeTextView = findViewById(R.id.timeDetails);
+
+        phoneTextView.setInputType(InputType.TYPE_NULL);
+        emailTextView.setInputType(InputType.TYPE_NULL);
+        descTextView.setInputType(InputType.TYPE_NULL);
+        dateTextView.setInputType(InputType.TYPE_NULL);
+        timeTextView.setInputType(InputType.TYPE_NULL);
 
         fabMain = findViewById(R.id.fabDetailsMain);
         fabAddEditReminder = findViewById(R.id.fabAddEditReminder);
@@ -212,7 +220,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             int id = Objects.requireNonNull(data).getIntExtra(CreateEditAppointmentActivity.EXTRA_ID, -1);
 
             if (id == -1) {
-                Snackbar.make(coordinatorLayout, "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(constraintLayout, "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
                 return;
             }
 
@@ -251,7 +259,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
 
             viewModel.update(appointments);
 
-            Snackbar.make(coordinatorLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(constraintLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
         }
     }
 }
