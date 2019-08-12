@@ -166,9 +166,9 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
                     android:hint="@string/phone_number"
-                    android:textColorHint="@color/colorPrimaryDark"
-                    android:layout_marginBottom="10dp">
+                    android:textColorHint="@color/colorPrimaryDark">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/phoneDetails"
@@ -200,16 +200,17 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Description"
                     android:layout_marginBottom="10dp"
+                    android:hint="Description"
                     android:textColorHint="@color/colorPrimaryDark">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/descDetails"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:inputType="none"
-                        android:text="Lorem ipsum anang suk abtum lafawe"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="Lorem ipsum anang suk abtum lafawe miinmi m  annndiodnio ndindionkndnfiod  ndn dnio n nn ndfnd n iniodfndi ndifnidofndfn nio nfn dilnio ni "
                         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -218,8 +219,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/date"
                     android:layout_marginBottom="10dp"
+                    android:hint="@string/date"
                     android:textColorHint="@color/colorPrimaryDark">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -254,41 +255,15 @@
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddEditClientReminder"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="23dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/ic_edit_black_24dp"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="@+id/nestedScrollView"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddEditReminder"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="23dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/ic_edit_black_24dp"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="@+id/nestedScrollView"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabDetailsMain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/ic_edit_black_24dp"
-        app:backgroundTint="@color/colorPrimaryDark"
-        app:layout_constraintBottom_toBottomOf="@+id/nestedScrollView"
-        app:layout_constraintEnd_toEndOf="parent" />
+    android:id="@+id/fabDetailsMain"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/fab_margin"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="16dp"
+    android:src="@drawable/ic_edit_black_24dp"
+    app:backgroundTint="@color/colorPrimaryDark"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

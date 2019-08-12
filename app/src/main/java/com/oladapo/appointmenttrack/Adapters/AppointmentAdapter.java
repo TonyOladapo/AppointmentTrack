@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.oladapo.appointmenttrack.Database.Appointments;
 import com.oladapo.appointmenttrack.R;
 
-import java.util.List;
-
 public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAdapter.ViewHolder> {
 
     private OnItemClickListener listener;

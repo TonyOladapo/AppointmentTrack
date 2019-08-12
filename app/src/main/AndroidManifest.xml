@@ -31,9 +31,6 @@
             tools:ignore="InnerclassSeparator" />
         <activity android:name=".Activities.AppointmentDetailsActivity" />
 
-        <service android:name=".Utils.ExampleJobScheduler"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            tools:ignore="InnerclassSeparator" />
     </application>
 
 </manifest>

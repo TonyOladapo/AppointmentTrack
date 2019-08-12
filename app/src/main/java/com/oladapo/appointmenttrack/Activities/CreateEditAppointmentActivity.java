@@ -1,16 +1,22 @@
 package com.oladapo.appointmenttrack.Activities;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +25,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
@@ -35,10 +40,12 @@ import androidx.fragment.app.DialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.oladapo.appointmenttrack.Fragments.DatePickerFragment;
 import com.oladapo.appointmenttrack.R;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -65,27 +73,26 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     public static final String EXTRA_DESC = "desc";
     public static final String EXTRA_DATE = "date";
     public static final String EXTRA_TIME = "time";
-    public static final String EXTRA_REMINDER_DATE = "reminder_date";
     public static final String EXTRA_REMINDER_TIME = "reminder_time";
     public static final String EXTRA_CLIENT_REMINDER_DATE = "client_reminder_date";
     public static final String EXTRA_CLIENT_REMINDER_TIME = "client_reminder_time";
     public static final String EXTRA_CLIENT_REMINDER_MESSAGE = "client_reminder_message";
     public static final String EXTRA_REMINDER_STATE = "reminder_state";
     public static final String EXTRA_CLIENT_REMINDER_STATE = "client_reminder_state";
-    public static final String EXTRA_ALL_DAY_STATE = "all_day_state";
     public static final String EXTRA_SMS_REMINDER = "sms_reminder";
     public static final String EXTRA_EMAIL_REMINDER = "email_reminder";
     public static final String EXTRA_BOTH = "both";
+    public static final String EXTRA_DATE_TIME = "dateTime";
 
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 10;
 
-    String reminderDate;
-    String reminderTime;
+    int reminderTime;
     int reminderState;
     int clientReminderState;
-    int allDayState;
     String clientReminderDate;
     String clientReminderTime;
+
+    private static String TAG = "vkv";
 
     private boolean SMS_REMINDER;
     private boolean EMAIL_REMINDER;
@@ -93,8 +100,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
     private static final int REMINDER_ON = 1;
     private static final int REMINDER_OFF = 0;
-    private static final int ALL_DAY_STATE_ON = 1;
-    private static final int ALL_DAY_STATE_OFF = 0;
     private static final int CLIENT_REMINDER_OFF = 0;
     private static final int CLIENT_REMINDER_ON = 1;
 
@@ -114,6 +119,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             int endColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
             ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
         }
+
+        checkForCalendarPermission();
 
         constraintLayout = findViewById(R.id.editAppointmentConstraint);
         nameEditText = findViewById(R.id.input_name);
@@ -196,10 +203,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 } else {
                     reminderState = REMINDER_OFF;
 
-                    reminderDate = null;
-                    reminderTime = null;
-
-                    allDayState = ALL_DAY_STATE_OFF;
+                    reminderTime = 0;
                 }
             }
         });
@@ -235,93 +239,27 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         dialog.setView(dialogView);
 
-        final SwitchCompat allDayReminderSwitch = dialogView.findViewById(R.id.reminderAllDaySwitch);
-        final TextView dateText = dialogView.findViewById(R.id.reminderDate);
-        final TextView timeText = dialogView.findViewById(R.id.reminderTime);
+        final EditText editText = dialogView.findViewById(R.id.dialogTimeEditText);
+        final MaterialSpinner materialSpinner = dialogView.findViewById(R.id.spinnerDuration);
 
-        dateText.setClickable(true);
-        timeText.setClickable(true);
-
-        if (allDayState == ALL_DAY_STATE_ON) {
-            allDayReminderSwitch.setChecked(true);
-        }
-
-        allDayReminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if (isChecked) {
-                    timeText.setVisibility(View.GONE);
-                    allDayState = ALL_DAY_STATE_ON;
-                } else {
-                    timeText.setVisibility(View.VISIBLE);
-                    allDayState = ALL_DAY_STATE_OFF;
-                }
-            }
-        });
-
-        final Calendar calendar = Calendar.getInstance();
-
-        final DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-
-                String chosenDate = DateFormat.getDateInstance().format(calendar.getTime());
-                dateText.setText(chosenDate);
-            }
-        };
-
-        dateText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new DatePickerDialog(dialogView.getContext(), dateSetListener, calendar
-                        .get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-                        .show();
-            }
-        });
-
-        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        final int minute = calendar.get(Calendar.MINUTE);
-
-        final TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                if (timePicker.isShown()) {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute);
-
-                    @SuppressLint("DefaultLocale") String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
-                    timeText.setText(chosenTime);
-                }
-            }
-        };
-
-        timeText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(dialogView.getContext(), timeSetListener, hour, minute, false);
-                timePickerDialog.setCanceledOnTouchOutside(false);
-                timePickerDialog.show();
-            }
-        });
+        materialSpinner.setItems("Minutes", "Hours");
 
         dialog.setCancelable(false)
                 .setTitle("Set reminder details")
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (dateText.getText().toString().matches("Select date") || !allDayReminderSwitch.isChecked() && timeText.getText().toString().matches("Select time")) {
-                            Snackbar.make(constraintLayout, "Date and time is needed to set a reminder", Snackbar.LENGTH_LONG).show();
-                            reminderSwitch.setChecked(false);
-                        } else {
-                            reminderDate = dateText.getText().toString();
-                        }
+                        if (!editText.getText().toString().isEmpty()) {
+                            int selectedItem = materialSpinner.getSelectedIndex();
 
-                        if (!allDayReminderSwitch.isChecked() && !timeText.getText().toString().matches("Select time")) {
-                            reminderTime = timeText.getText().toString();
+                            if (selectedItem == 0) {
+                                reminderTime = Integer.parseInt(editText.getText().toString());
+
+                            } else if (selectedItem == 1) {
+                                String test = editText.getText().toString();
+
+                                reminderTime = Integer.parseInt(test) * 60;
+                            }
                         }
                     }
                 })
@@ -450,7 +388,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
             int extraReminderSwitch = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
             int extraClientReminderSwitch = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
-            int extraAllDayState = intent.getIntExtra(EXTRA_ALL_DAY_STATE, 0);
             boolean extraSms = intent.getBooleanExtra(EXTRA_SMS_REMINDER, false);
             boolean extraEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
             boolean extraBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
@@ -461,14 +398,10 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             descEditText.setText(intent.getStringExtra(EXTRA_DESC));
             dateEditText.setText(intent.getStringExtra(EXTRA_DATE));
             timeEditText.setText(intent.getStringExtra(EXTRA_TIME));
-            reminderDate = intent.getStringExtra(EXTRA_REMINDER_DATE);
-            reminderTime = intent.getStringExtra(EXTRA_REMINDER_TIME);
+            reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
             clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
             clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
             //edit message
-            if (extraAllDayState == ALL_DAY_STATE_ON) {
-                allDayState = ALL_DAY_STATE_ON;
-            }
 
             if (extraReminderSwitch == REMINDER_ON) {
                 reminderSwitch.setChecked(true);
@@ -534,6 +467,20 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         String time = timeEditText.getText().toString();
         String desc = descEditText.getText().toString();
 
+        String rawDateTimeString = date + time;
+
+        SimpleDateFormat oldDateTimeFormat = new SimpleDateFormat("MMM dd, yyyyHH:mm", Locale.getDefault());
+        SimpleDateFormat newDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        String dateTimeString = null;
+        try {
+            dateTimeString = newDateTimeFormat.format(Objects.requireNonNull(oldDateTimeFormat.parse(rawDateTimeString)));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "validateAndSubmitForm: " + dateTimeString);
+
+
         SimpleDateFormat format = new SimpleDateFormat("dd MMM", Locale.getDefault());
         Date today = new Date();
 
@@ -563,18 +510,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         }
 
         if (basicDataIsAvailable && reminderState == REMINDER_ON) {
-            if (!reminderDate.matches("Select date") && reminderDate != null) {
-                if (allDayState == ALL_DAY_STATE_ON) {
-                    // TODO: add to calender with all day on
-                    reminderDataIsAvailable = true;
-
-                } else if (allDayState == ALL_DAY_STATE_OFF) {
-                    if (!reminderTime.matches("Select time") && reminderTime != null) {
-                        // TODO: add to calender with all day off
-                        reminderDataIsAvailable = true;
-
-                    }
-                }
+            if (reminderTime > 0) {
+                reminderDataIsAvailable = true;
             }
         }
 
@@ -623,54 +560,34 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         if (basicDataIsAvailable) {
             if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_ON) {
                 if (reminderDataIsAvailable && clientReminderDataIsAvailable) {
-                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
-                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_OFF) {
                 if (reminderDataIsAvailable) {
-                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
-                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_ON) {
                 if (clientReminderDataIsAvailable) {
-                    addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
-                            allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                    addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_OFF) {
-                addFormDataToIntent(name, phone, email, desc, date, time, reminderDate, reminderTime,
-                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,
-                        allDayState,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES);
+                addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
+                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
             }
         }
     }
 
-//    @AfterPermissionGranted(MY_PERMISSIONS_REQUEST_WRITE_CALENDAR)
-//    private void checkForCalendarPermission() {
-//        String[] perms = {Manifest.permission.WRITE_CALENDAR};
-//
-//        if (EasyPermissions.hasPermissions(this, perms)) {
-//
-//        } else {
-//            EasyPermissions.requestPermissions(this, "Permission is required to add reminder to calendar",
-//                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR, perms);
-//        }
-//    }
-//
-//    private void scheduleClientReminder() {
-//
-//    }
-
     private void addFormDataToIntent(String name, String phone, String email, String desc,
-                                     String date, String time, String reminderDate, String reminderTime,
+                                     String date, String time, long reminderTime,
                                      String clientReminderDate, String clientReminderTime, int reminderState,
-                                     int clientReminderState, String dateAdded, int allDayState, boolean isSms,
-                                     boolean isEmail, boolean isBoth) {
+                                     int clientReminderState, String dateAdded, boolean isSms,
+                                     boolean isEmail, boolean isBoth, String dateTime) {
         Intent intent = new Intent(CreateEditAppointmentActivity.this, MainActivity.class);
         intent.putExtra("name", name);
         intent.putExtra("phone", phone);
@@ -678,17 +595,18 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         intent.putExtra("desc", desc);
         intent.putExtra("date", date);
         intent.putExtra("time", time);
-        intent.putExtra("reminderDate", reminderDate);
         intent.putExtra("reminderTime", reminderTime);
         intent.putExtra("clientReminderDate", clientReminderDate);
         intent.putExtra("clientReminderTime", clientReminderTime);
         intent.putExtra("reminderState", reminderState);
         intent.putExtra("clientReminderState", clientReminderState);
         intent.putExtra("dateAdded", dateAdded);
-        intent.putExtra("allDayState", allDayState);
         intent.putExtra("is_sms", isSms);
         intent.putExtra("is_email", isEmail);
         intent.putExtra("is_both", isBoth);
+        intent.putExtra("dateTime", dateTime);
+
+//        addAppointmentToCalendar();
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {
@@ -736,13 +654,15 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-        //add reminder to calendar
+        Log.d(TAG, "onPermissionsGranted: permission granted");
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
             new AppSettingsDialog.Builder(this).build().show();
+        } else {
+            onBackPressed();
         }
     }
 
@@ -751,38 +671,75 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE) {
-            //add reminder to calendar
+            checkForCalendarPermission();
         }
     }
 
-    //    private void addReminderToCalendar() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    Activity#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for Activity#requestPermissions for more details.
-//                return;
-//            }
-//        }
-//
-//        String eventTitle = nameEditText.getText().toString();
-//        Calendar calendar = Calendar.getInstance();
-//        String timeZone = calendar.getTimeZone().toString();
-//
-//        ContentValues reminder = new ContentValues();
-//
-//        reminder.put(CalendarContract.Reminders.CALENDAR_ID, 1);
-//        reminder.put(CalendarContract.Reminders.TITLE, eventTitle);
-//        reminder.put(CalendarContract.Reminders.HAS_ALARM, "hasAlarm");
-//        reminder.put(CalendarContract.Reminders.ALL_DAY, true);
-//        reminder.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
-//        reminder.put(CalendarContract.Reminders.DTSTART, calendar.getTimeInMillis());
-//        reminder.put(CalendarContract.Reminders.EVENT_TIMEZONE, timeZone);
-//
-//        getContentResolver().insert(CalendarContract.Events.CONTENT_URI, reminder);
-//    }
+    @AfterPermissionGranted(MY_PERMISSIONS_REQUEST_WRITE_CALENDAR)
+    private void checkForCalendarPermission() {
+        String[] perms = {Manifest.permission.WRITE_CALENDAR};
+
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            Log.d(TAG, "onPermissionsGranted: permission granted");
+
+        } else {
+            EasyPermissions.requestPermissions(this, "Calendar permission is required to create an appointment.",
+                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR, perms);
+        }
+    }
+
+    private void addAppointmentToCalendar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+        }
+
+        try {
+
+            String eventTitle = nameEditText.getText().toString();
+            String dateTimeString = dateEditText.getText().toString() + timeEditText.getText().toString();
+
+            SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyyHH:mm", Locale.getDefault());
+            Date date = format.parse(dateTimeString);
+
+            long dateTimeInMillis = Objects.requireNonNull(date).getTime();
+
+            Calendar beginTime = Calendar.getInstance();
+            Calendar endCalendar = Calendar.getInstance();
+
+            beginTime.setTimeInMillis(dateTimeInMillis);
+
+            ContentValues event = new ContentValues();
+
+            event.put(CalendarContract.Events.CALENDAR_ID, 1);
+            event.put(CalendarContract.Events.TITLE, eventTitle);
+            event.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+            event.put(CalendarContract.Events.DTEND, endCalendar.getTimeInMillis());
+            event.put(CalendarContract.Events.HAS_ALARM, true);
+            event.put(CalendarContract.Events.EVENT_TIMEZONE, "UTC");
+
+            Uri uri = getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
+
+            if (reminderState == REMINDER_ON) {
+
+                Long eventId = Long.parseLong(Objects.requireNonNull(uri).getLastPathSegment());
+
+                ContentValues reminder = new ContentValues();
+
+                reminder.put(CalendarContract.Reminders.EVENT_ID, eventId);
+                reminder.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+                reminder.put(CalendarContract.Reminders.MINUTES, reminderTime);
+
+                getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, reminder);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void scheduleClientReminder() {
+
+    }
 }

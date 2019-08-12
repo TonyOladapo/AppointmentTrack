@@ -24,6 +24,6 @@ public interface DAO {
     @Query("DELETE FROM appointments_table")
     void deleteAllAppointments();
 
-    @Query("SELECT * FROM appointments_table ORDER BY date('%02d %yyyy') ASC")
+    @Query("SELECT * FROM appointments_table ORDER BY dateTime")
     LiveData<List<Appointments>> getAllAppointments();
 }

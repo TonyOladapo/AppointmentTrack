@@ -1,38 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/reminderAllDaySwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableStart="@drawable/ic_access_time_black_24dp"
-        android:drawablePadding="10dp"
-        android:padding="10dp"
-        android:text="All day"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-    <TextView
-        android:id="@+id/reminderDate"
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/dialogTimeEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/reminderAllDaySwitch"
-        android:layout_marginStart="40dp"
         android:layout_marginTop="10dp"
-        android:text="Select date"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:inputType="number"
+        android:text="@string/_30"
+        android:layout_weight="1"/>
 
-    <TextView
-        android:id="@+id/reminderTime"
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/spinnerDuration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/reminderAllDaySwitch"
-        android:layout_alignParentEnd="true"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="40dp"
-        android:text="Select time"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:layout_weight="1"/>
 
-</RelativeLayout>
+</LinearLayout>

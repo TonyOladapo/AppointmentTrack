@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -38,10 +39,11 @@ import java.util.Objects;
 public class HomeFragment extends Fragment {
 
     private ViewModel viewModel;
-    private TextView noAppointmentsTextView;
 
     private static final int RC_ADD_CLIENT = 2;
     private static final int RC_APPOINTMENT_DETAILS = 3;
+
+    private ConstraintLayout constraintLayout;
 
     @Nullable
     @Override
@@ -63,7 +65,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        noAppointmentsTextView = view.findViewById(R.id.no_appointments);
+        constraintLayout = view.findViewById(R.id.homeLayout);
 
         final AppointmentAdapter adapter = new AppointmentAdapter();
 
@@ -79,11 +81,7 @@ public class HomeFragment extends Fragment {
         viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
             @Override
             public void onChanged(List<Appointments> appointments) {
-                if (viewModel.getAllAppointments() == null) {
-                    noAppointmentsTextView.setVisibility(View.VISIBLE);
-                } else {
-                    adapter.submitList(appointments);
-                }
+                adapter.submitList(appointments);
             }
         });
 
@@ -98,17 +96,16 @@ public class HomeFragment extends Fragment {
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE, appointments.getDate());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_TIME, appointments.getTime());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_DESC, appointments.getDescription());
-                intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_DATE, appointments.getReminderDate());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_TIME, appointments.getReminderTime());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_DATE, appointments.getClientReminderDate());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_TIME, appointments.getClientReminderTime());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_MESSAGE, appointments.getClientReminderMessage());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_REMINDER_STATE, appointments.getReminderState());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_REMINDER_STATE, appointments.getClientReminderState());
-                intent.putExtra(AppointmentDetailsActivity.EXTRA_ALL_DAY_STATE, appointments.getAllDayState());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_SMS_REMINDER, appointments.isSms());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_BOTH, appointments.isBoth());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE_TIME, appointments.getDateTime());
 
                 startActivityForResult(intent, RC_APPOINTMENT_DETAILS);
             }
@@ -127,27 +124,24 @@ public class HomeFragment extends Fragment {
             String desc = data.getStringExtra("desc");
             String date = data.getStringExtra("date");
             String time = data.getStringExtra("time");
-            String reminderDate = data.getStringExtra("reminderDate");
-            String reminderTime = data.getStringExtra("reminderTime");
+            int reminderTime = data.getIntExtra("reminderTime", 0);
             String clientReminderDate = data.getStringExtra("clientReminderDate");
             String clientReminderTime = data.getStringExtra("clientReminderTime");
             int reminderState = data.getIntExtra("reminderState", 0);
             int clientReminderState = data.getIntExtra("clientReminderState", 0);
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
-            int allDayState = data.getIntExtra("allDayState", 0);
             boolean isSms = data.getBooleanExtra("is_sms", false);
             boolean isEmail = data.getBooleanExtra("is_email", false);
             boolean isBoth = data.getBooleanExtra("is_both", false);
+            String dateTime = data.getStringExtra("dateTime");
 
-            Appointments appointments = new Appointments(name, phone, email, desc, date, time,
-                    reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
-                    isSms, isEmail, isBoth);
+            Appointments appointments = new Appointments(name, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
 
             viewModel.insert(appointments);
 
-            Snackbar.make(Objects.requireNonNull(getView()), "Appointment added", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(constraintLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -160,7 +154,7 @@ public class HomeFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.deleteAllNotes) {
             viewModel.deleteAllAppointments();
-            Snackbar.make(Objects.requireNonNull(getView()), "All appointments deleted", Snackbar.LENGTH_LONG)
+            Snackbar.make(constraintLayout, "All appointments deleted", Snackbar.LENGTH_LONG)
                     .setAction("Undo", new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -206,7 +200,7 @@ public class HomeFragment extends Fragment {
                 }
             });
 
-            Snackbar.make(Objects.requireNonNull(getView()), "Appointment deleted", Snackbar.LENGTH_LONG)
+            Snackbar.make(constraintLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
                         .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {

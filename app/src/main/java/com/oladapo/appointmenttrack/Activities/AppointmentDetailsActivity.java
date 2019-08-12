@@ -36,17 +36,16 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     public static final String EXTRA_DESC = "desc";
     public static final String EXTRA_DATE = "date";
     public static final String EXTRA_TIME = "time";
-    public static final String EXTRA_REMINDER_DATE = "reminder_date";
     public static final String EXTRA_REMINDER_TIME = "reminder_time";
     public static final String EXTRA_CLIENT_REMINDER_DATE = "client_reminder_date";
     public static final String EXTRA_CLIENT_REMINDER_TIME = "client_reminder_time";
     public static final String EXTRA_CLIENT_REMINDER_MESSAGE = "client_reminder_message";
     public static final String EXTRA_REMINDER_STATE = "reminder_state";
     public static final String EXTRA_CLIENT_REMINDER_STATE = "client_reminder_state";
-    public static final String EXTRA_ALL_DAY_STATE = "all_day_state";
     public static final String EXTRA_SMS_REMINDER = "sms_reminder";
     public static final String EXTRA_EMAIL_REMINDER = "email_reminder";
     public static final String EXTRA_BOTH = "both";
+    public static final String EXTRA_DATE_TIME = "dateTime";
 
     private int id;
     private String clientName;
@@ -55,22 +54,19 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     private String desc;
     private String date;
     private String time;
-    private String reminderDate;
-    private String reminderTime;
+    private int reminderTime;
     private String clientReminderDate;
     private String clientReminderTime;
     private String clientReminderMessage;
     private int reminderState;
     private int clientReminderState;
-    private int allDayState;
     private boolean isSms;
     private boolean isEmail;
     private boolean isBoth;
+    private String dateTime;
 
     private static final int RC_EDIT_CLIENT = 4;
     private static final int RESULT_OK = 2;
-
-    private boolean isFabOpen;
 
     EditText phoneTextView;
     EditText emailTextView;
@@ -80,9 +76,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     TextView clientNameTextView;
 
     FloatingActionButton fabMain;
-    FloatingActionButton fabAddEditReminder;
-    FloatingActionButton fabAddEditClientReminder;
-
     ConstraintLayout constraintLayout;
 
     ViewModel viewModel;
@@ -108,17 +101,11 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         timeTextView.setInputType(InputType.TYPE_NULL);
 
         fabMain = findViewById(R.id.fabDetailsMain);
-        fabAddEditReminder = findViewById(R.id.fabAddEditReminder);
-        fabAddEditClientReminder = findViewById(R.id.fabAddEditClientReminder);
 
         fabMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!isFabOpen) {
-                    showMenu();
-                } else {
-                    startEditAppointment();
-                }
+                startEditAppointment();
             }
         });
 
@@ -148,17 +135,16 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         desc = intent.getStringExtra(EXTRA_DESC);
         date = intent.getStringExtra(EXTRA_DATE);
         time = intent.getStringExtra(EXTRA_TIME);
-        reminderDate = intent.getStringExtra(EXTRA_REMINDER_DATE);
-        reminderTime = intent.getStringExtra(EXTRA_REMINDER_TIME);
+        reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
         clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
         clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
         clientReminderMessage = intent.getStringExtra(EXTRA_CLIENT_REMINDER_MESSAGE);
         reminderState = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
         clientReminderState = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
-        allDayState = intent.getIntExtra(EXTRA_ALL_DAY_STATE, 0);
         isSms = intent.getBooleanExtra(EXTRA_SMS_REMINDER, false);
         isEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
         isBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
+        dateTime = intent.getStringExtra(EXTRA_DATE_TIME);
 
         clientNameTextView.setText(clientName);
         dateTextView.setText(date);
@@ -174,18 +160,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         });
     }
 
-    private void showMenu() {
-        isFabOpen = true;
-        fabAddEditReminder.animate().translationY(-getResources().getDimension(R.dimen.standard_55));
-        fabAddEditClientReminder.animate().translationY(-getResources().getDimension(R.dimen.standard_105));
-    }
-
-    private void closeMenu() {
-        isFabOpen = false;
-        fabAddEditReminder.animate().translationY(0);
-        fabAddEditClientReminder.animate().translationY(0);
-    }
-
     private void startEditAppointment() {
 
         Intent intent = new Intent(AppointmentDetailsActivity.this, CreateEditAppointmentActivity.class);
@@ -197,17 +171,16 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE, date);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_TIME, time);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_DESC, desc);
-        intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_DATE, reminderDate);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_TIME, reminderTime);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_DATE, clientReminderDate);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_TIME, clientReminderTime);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_MESSAGE, clientReminderMessage);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_STATE, reminderState);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_STATE, clientReminderState);
-        intent.putExtra(CreateEditAppointmentActivity.EXTRA_ALL_DAY_STATE, allDayState);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_SMS_REMINDER, isSms);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL_REMINDER, isEmail);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_BOTH, isBoth);
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE_TIME, dateTime);
 
         startActivityForResult(intent, RC_EDIT_CLIENT);
     }
@@ -230,23 +203,20 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             String desc = data.getStringExtra("desc");
             String date = data.getStringExtra("date");
             String time = data.getStringExtra("time");
-            String reminderDate = data.getStringExtra("reminderDate");
-            String reminderTime = data.getStringExtra("reminderTime");
+            int reminderTime = data.getIntExtra("reminderTime", 0);
             String clientReminderDate = data.getStringExtra("clientReminderDate");
             String clientReminderTime = data.getStringExtra("clientReminderTime");
             int reminderState = data.getIntExtra("reminderState", 0);
             int clientReminderState = data.getIntExtra("clientReminderState", 0);
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
-            int allDayState = data.getIntExtra("allDayState", 0);
             boolean isSms = data.getBooleanExtra("is_sms", false);
             boolean isEmail = data.getBooleanExtra("is_email", false);
             boolean isBoth = data.getBooleanExtra("is_both", false);
+            String dateTime  = data.getStringExtra("dateTime");
 
-            Appointments appointments = new Appointments(name, phone, email, desc, date, time,
-                    reminderDate, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, allDayState,
-                    isSms, isEmail, isBoth);
+            Appointments appointments = new Appointments(name, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
 
             viewModel.getAllAppointments().observe(this, new Observer<List<Appointments>>() {
                 @Override
