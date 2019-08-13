@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -88,6 +90,7 @@ public class HomeFragment extends Fragment {
         adapter.setOnItemClickListener(new AppointmentAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Appointments appointments) {
+
                 Intent intent = new Intent(getContext(), AppointmentDetailsActivity.class);
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_ID, appointments.getId());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_NAME, appointments.getClientName());
@@ -108,6 +111,14 @@ public class HomeFragment extends Fragment {
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE_TIME, appointments.getDateTime());
 
                 startActivityForResult(intent, RC_APPOINTMENT_DETAILS);
+            }
+        });
+
+        adapter.setOnItemLongClickListener(new AppointmentAdapter.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(Appointments appointments) {
+                new AlertDialog.Builder(Objects.requireNonNull(getContext()))
+                        .show();
             }
         });
     }

@@ -146,8 +146,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         initDateAndTimeEditTexts();
 
-//        initSwitches();
-
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -613,7 +611,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         intent.putExtra("is_both", isBoth);
         intent.putExtra("dateTime", dateTime);
 
-//        addAppointmentToCalendar();
+        addAppointmentToCalendar();
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {

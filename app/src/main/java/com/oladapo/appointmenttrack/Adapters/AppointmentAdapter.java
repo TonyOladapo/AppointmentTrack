@@ -16,6 +16,7 @@ import com.oladapo.appointmenttrack.R;
 public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAdapter.ViewHolder> {
 
     private OnItemClickListener listener;
+    private OnItemLongClickListener longClickListener;
 
     public AppointmentAdapter() {
         super(DIFF_CALLBACK);
@@ -79,6 +80,17 @@ public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAda
                     }
                 }
             });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    int position = getAdapterPosition();
+                    if (listener != null && position != RecyclerView.NO_POSITION) {
+                        longClickListener.onItemLongClick(getItem(position));
+                    }
+                    return false;
+                }
+            });
         }
     }
 
@@ -86,7 +98,15 @@ public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAda
         void onItemClick(Appointments appointments);
     }
 
+    public interface OnItemLongClickListener {
+        void onItemLongClick(Appointments appointments);
+    }
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener longClickListener) {
+        this.longClickListener = longClickListener;
     }
 }
