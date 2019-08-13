@@ -146,7 +146,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         initDateAndTimeEditTexts();
 
-        initSwitches();
+//        initSwitches();
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -450,8 +450,14 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     calendar.set(Calendar.MINUTE, minute);
 
-                    @SuppressLint("DefaultLocale") String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
-                    timeEditText.setText(chosenTime);
+                    if (hourOfDay >= 12) {
+
+                        @SuppressLint("DefaultLocale") String chosenTime = (String.format("%02d:%02d", hourOfDay, minute) + " PM");
+                        timeEditText.setText(chosenTime);
+                    } else {
+                        @SuppressLint("DefaultLocale") String chosenTime = (String.format("%02d:%02d", hourOfDay, minute) + " AM");
+                        timeEditText.setText(chosenTime);
+                    }
                 }
             }
         };
@@ -460,6 +466,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     }
 
     private void validateAndSubmitForm() {
+        
         String name = nameEditText.getText().toString();
         String phone = phoneEditText.getText().toString();
         String email = emailEditText.getText().toString();
@@ -741,5 +748,11 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
     private void scheduleClientReminder() {
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initSwitches();
     }
 }

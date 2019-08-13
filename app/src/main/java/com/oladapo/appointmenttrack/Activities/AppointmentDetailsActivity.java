@@ -4,9 +4,7 @@ import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -15,7 +13,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -24,7 +21,6 @@ import com.oladapo.appointmenttrack.Database.Appointments;
 import com.oladapo.appointmenttrack.Database.ViewModel;
 import com.oladapo.appointmenttrack.R;
 
-import java.util.List;
 import java.util.Objects;
 
 public class AppointmentDetailsActivity extends AppCompatActivity implements LifecycleObserver {
@@ -68,11 +64,11 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     private static final int RC_EDIT_CLIENT = 4;
     private static final int RESULT_OK = 2;
 
-    EditText phoneTextView;
-    EditText emailTextView;
-    EditText descTextView;
-    EditText dateTextView;
-    EditText timeTextView;
+    TextView phoneTextView;
+    TextView emailTextView;
+    TextView descTextView;
+    TextView dateTextView;
+    TextView timeTextView;
     TextView clientNameTextView;
 
     FloatingActionButton fabMain;
@@ -88,17 +84,11 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         constraintLayout = findViewById(R.id.layoutAppointmentDetails);
 
         clientNameTextView = findViewById(R.id.clientNameDetails);
-        phoneTextView = findViewById(R.id.phoneDetails);
-        emailTextView = findViewById(R.id.emailDetails);
-        descTextView = findViewById(R.id.descDetails);
-        dateTextView = findViewById(R.id.dateDetails);
-        timeTextView = findViewById(R.id.timeDetails);
-
-        phoneTextView.setInputType(InputType.TYPE_NULL);
-        emailTextView.setInputType(InputType.TYPE_NULL);
-        descTextView.setInputType(InputType.TYPE_NULL);
-        dateTextView.setInputType(InputType.TYPE_NULL);
-        timeTextView.setInputType(InputType.TYPE_NULL);
+        phoneTextView = findViewById(R.id.appointment_details_phone);
+        emailTextView = findViewById(R.id.appointment_details_email);
+        descTextView = findViewById(R.id.appointment_details_desc);
+        dateTextView = findViewById(R.id.appointment_details_date);
+        timeTextView = findViewById(R.id.appointment_details_time);
 
         fabMain = findViewById(R.id.fabDetailsMain);
 
@@ -145,6 +135,21 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         isEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
         isBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
         dateTime = intent.getStringExtra(EXTRA_DATE_TIME);
+
+        if (!phone.isEmpty()) {
+            phoneTextView.setText(phone);
+            phoneTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+        }
+
+        if (!email.isEmpty()) {
+            emailTextView.setText(email);
+            emailTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+        }
+
+        if (!desc.isEmpty()) {
+            descTextView.setText(phone);
+            descTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+        }
 
         clientNameTextView.setText(clientName);
         dateTextView.setText(date);
@@ -197,33 +202,61 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
                 return;
             }
 
-            final String name = data.getStringExtra("name");
-            String phone = data.getStringExtra("phone");
-            String email = data.getStringExtra("email");
-            String desc = data.getStringExtra("desc");
-            String date = data.getStringExtra("date");
-            String time = data.getStringExtra("time");
-            int reminderTime = data.getIntExtra("reminderTime", 0);
-            String clientReminderDate = data.getStringExtra("clientReminderDate");
-            String clientReminderTime = data.getStringExtra("clientReminderTime");
-            int reminderState = data.getIntExtra("reminderState", 0);
-            int clientReminderState = data.getIntExtra("clientReminderState", 0);
+            clientName = data.getStringExtra("name");
+            phone = data.getStringExtra("phone");
+            email = data.getStringExtra("email");
+            desc = data.getStringExtra("desc");
+            date = data.getStringExtra("date");
+            time = data.getStringExtra("time");
+            reminderTime = data.getIntExtra("reminderTime", 0);
+            clientReminderDate = data.getStringExtra("clientReminderDate");
+            clientReminderTime = data.getStringExtra("clientReminderTime");
+            reminderState = data.getIntExtra("reminderState", 0);
+            clientReminderState = data.getIntExtra("clientReminderState", 0);
             String reminderMessage = "message";
             String dateAdded = data.getStringExtra("dateAdded");
-            boolean isSms = data.getBooleanExtra("is_sms", false);
-            boolean isEmail = data.getBooleanExtra("is_email", false);
-            boolean isBoth = data.getBooleanExtra("is_both", false);
-            String dateTime  = data.getStringExtra("dateTime");
+            isSms = data.getBooleanExtra("is_sms", false);
+            isEmail = data.getBooleanExtra("is_email", false);
+            isBoth = data.getBooleanExtra("is_both", false);
+            dateTime  = data.getStringExtra("dateTime");
 
-            Appointments appointments = new Appointments(name, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
+            if (!clientNameTextView.getText().toString().matches(Objects.requireNonNull(clientName))) {
+                clientNameTextView.setText(clientName);
+            }
 
-            viewModel.getAllAppointments().observe(this, new Observer<List<Appointments>>() {
-                @Override
-                public void onChanged(List<Appointments> appointments) {
-                    clientNameTextView.setText(name);
+            if (phone != null && !phoneTextView.getText().toString().matches(Objects.requireNonNull(phone))) {
+                if (!phone.isEmpty()) {
+                    phoneTextView.setText(phone);
+                    phoneTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
                 }
-            });
+            }
+
+            if (email != null && !emailTextView.getText().toString().matches(Objects.requireNonNull(email))) {
+                if (!email.isEmpty()) {
+                    emailTextView.setText(email);
+                    emailTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+                }
+            }
+
+            if (desc != null && !descTextView.getText().toString().matches(Objects.requireNonNull(desc))) {
+                if (!desc.isEmpty()) {
+                    descTextView.setText(desc);
+                    descTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+                }
+            }
+
+            if (!dateTextView.getText().toString().matches(Objects.requireNonNull(date))) {
+                dateTextView.setText(date);
+                dateTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+            }
+
+            if (!timeTextView.getText().toString().matches(Objects.requireNonNull(time))) {
+                timeTextView.setText(time);
+                timeTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+            }
+
+            Appointments appointments = new Appointments(clientName, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
 
             appointments.setId(id);
 

@@ -164,90 +164,84 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/contactLinearLayout">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/phone_number"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/colorPrimaryDark" />
+
+                <TextView
+                    android:id="@+id/appointment_details_phone"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:hint="@string/phone_number"
-                    android:textColorHint="@color/colorPrimaryDark">
+                    android:text="@string/dummyPhone"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textColor="@color/md_light_disabled" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/phoneDetails"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="0553670802"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/email"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/colorPrimaryDark" />
 
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/appointment_details_email"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:hint="@string/email"
-                    android:textColorHint="@color/colorPrimaryDark">
+                    android:text="@string/dummyEmail"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textColor="@color/md_light_disabled" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/emailDetails"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="toneyobaze@gmail.com"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/description"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/colorPrimaryDark" />
 
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/appointment_details_desc"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:hint="Description"
-                    android:textColorHint="@color/colorPrimaryDark">
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="@string/dummyDesc"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textColor="@color/md_light_disabled" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/descDetails"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:inputType="none"
-                        android:text="Lorem ipsum anang suk abtum lafawe"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/date"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/colorPrimaryDark" />
 
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/appointment_details_date"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:hint="@string/date"
-                    android:textColorHint="@color/colorPrimaryDark">
+                    android:text="@string/dummyDate"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/dateDetails"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="Aug 24, 2019"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="@string/time"
-                    android:textColorHint="@color/colorPrimaryDark">
+                    android:text="@string/time"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/colorPrimaryDark" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/timeDetails"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="!0:00"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-                </com.google.android.material.textfield.TextInputLayout>
+                <TextView
+                    android:id="@+id/appointment_details_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dummyTime"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
             </LinearLayout>
 
