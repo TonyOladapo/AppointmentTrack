@@ -42,24 +42,29 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     public static final String EXTRA_EMAIL_REMINDER = "email_reminder";
     public static final String EXTRA_BOTH = "both";
     public static final String EXTRA_DATE_TIME = "dateTime";
+    public static final String EXTRA_DATE_ADDED = "dateAdded";
 
     private int id;
+    private int reminderTime;
+    private int reminderState;
+    private int clientReminderState;
+
     private String clientName;
     private String phone;
     private String email;
     private String desc;
     private String date;
     private String time;
-    private int reminderTime;
     private String clientReminderDate;
     private String clientReminderTime;
     private String clientReminderMessage;
-    private int reminderState;
-    private int clientReminderState;
+    private String dateTime;
+    private String dateAdded;
+
     private boolean isSms;
     private boolean isEmail;
     private boolean isBoth;
-    private String dateTime;
+
 
     private static final int RC_EDIT_CLIENT = 4;
     private static final int RESULT_OK = 2;
@@ -119,22 +124,25 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         Intent intent = getIntent();
 
         id = intent.getIntExtra(EXTRA_ID, 0);
+        reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
+        reminderState = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
+        clientReminderState = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
+
         clientName = intent.getStringExtra(EXTRA_CLIENT_NAME);
         phone = intent.getStringExtra(EXTRA_PHONE);
         email = intent.getStringExtra(EXTRA_EMAIL);
         desc = intent.getStringExtra(EXTRA_DESC);
         date = intent.getStringExtra(EXTRA_DATE);
         time = intent.getStringExtra(EXTRA_TIME);
-        reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
         clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
         clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
         clientReminderMessage = intent.getStringExtra(EXTRA_CLIENT_REMINDER_MESSAGE);
-        reminderState = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
-        clientReminderState = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
+        dateTime = intent.getStringExtra(EXTRA_DATE_TIME);
+        dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
+
         isSms = intent.getBooleanExtra(EXTRA_SMS_REMINDER, false);
         isEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
         isBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
-        dateTime = intent.getStringExtra(EXTRA_DATE_TIME);
 
         if (!phone.isEmpty()) {
             phoneTextView.setText(phone);
@@ -147,7 +155,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         }
 
         if (!desc.isEmpty()) {
-            descTextView.setText(phone);
+            descTextView.setText(desc);
             descTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
         }
 
@@ -169,6 +177,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
 
         Intent intent = new Intent(AppointmentDetailsActivity.this, CreateEditAppointmentActivity.class);
 
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_INTENT_CODE, 2);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_ID, id);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_NAME, clientName);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_PHONE, phone);
@@ -186,6 +195,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL_REMINDER, isEmail);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_BOTH, isBoth);
         intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE_TIME, dateTime);
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE_ADDED, dateAdded);
 
         startActivityForResult(intent, RC_EDIT_CLIENT);
     }
@@ -202,23 +212,25 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
                 return;
             }
 
+            reminderTime = data.getIntExtra("reminderTime", 0);
+            reminderState = data.getIntExtra("reminderState", 0);
+            clientReminderState = data.getIntExtra("clientReminderState", 0);
+
             clientName = data.getStringExtra("name");
             phone = data.getStringExtra("phone");
             email = data.getStringExtra("email");
             desc = data.getStringExtra("desc");
             date = data.getStringExtra("date");
             time = data.getStringExtra("time");
-            reminderTime = data.getIntExtra("reminderTime", 0);
             clientReminderDate = data.getStringExtra("clientReminderDate");
             clientReminderTime = data.getStringExtra("clientReminderTime");
-            reminderState = data.getIntExtra("reminderState", 0);
-            clientReminderState = data.getIntExtra("clientReminderState", 0);
-            String reminderMessage = "message";
-            String dateAdded = data.getStringExtra("dateAdded");
+            clientReminderMessage = data.getStringExtra("clientReminderMessage");
+            dateAdded = data.getStringExtra("dateAdded");
+            dateTime  = data.getStringExtra("dateTime");
+
             isSms = data.getBooleanExtra("is_sms", false);
             isEmail = data.getBooleanExtra("is_email", false);
             isBoth = data.getBooleanExtra("is_both", false);
-            dateTime  = data.getStringExtra("dateTime");
 
             if (!clientNameTextView.getText().toString().matches(Objects.requireNonNull(clientName))) {
                 clientNameTextView.setText(clientName);
@@ -256,7 +268,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             }
 
             Appointments appointments = new Appointments(clientName, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
-                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
+                    clientReminderDate, clientReminderTime, clientReminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
 
             appointments.setId(id);
 

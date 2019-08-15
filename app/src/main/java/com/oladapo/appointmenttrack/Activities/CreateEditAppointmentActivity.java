@@ -66,6 +66,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     SwitchCompat reminderSwitch, clientReminderSwitch;
     ConstraintLayout constraintLayout;
 
+    public static final String EXTRA_INTENT_CODE = "intent_code";
     public static final String EXTRA_ID = "id";
     public static final String EXTRA_CLIENT_NAME = "name";
     public static final String EXTRA_PHONE = "phone";
@@ -83,6 +84,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     public static final String EXTRA_EMAIL_REMINDER = "email_reminder";
     public static final String EXTRA_BOTH = "both";
     public static final String EXTRA_DATE_TIME = "dateTime";
+    public static final String EXTRA_DATE_ADDED = "dateAdded";
 
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 10;
 
@@ -91,6 +93,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     int clientReminderState;
     String clientReminderDate;
     String clientReminderTime;
+    String dateAdded;
 
     private static String TAG = "vkv";
 
@@ -102,6 +105,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     private static final int REMINDER_OFF = 0;
     private static final int CLIENT_REMINDER_OFF = 0;
     private static final int CLIENT_REMINDER_ON = 1;
+
+    private boolean intentHasExtraCode;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -375,12 +380,49 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     }
 
     private void initToolbar() {
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
 
-        if (intent.hasExtra(EXTRA_ID)) {
+        if (intent.hasExtra(EXTRA_ID) && intent.hasExtra(EXTRA_INTENT_CODE)) {
+
+            reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                    if (isChecked) {
+                        reminderState = REMINDER_ON;
+
+                    } else {
+                        reminderState = REMINDER_OFF;
+
+                        reminderTime = 0;
+                    }
+                }
+            });
+
+            clientReminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                    if (isChecked) {
+                        clientReminderState = CLIENT_REMINDER_ON;
+
+                    } else {
+                        clientReminderState = CLIENT_REMINDER_OFF;
+
+                        clientReminderDate = null;
+                        clientReminderTime = null;
+
+                        SMS_REMINDER = false;
+                        EMAIL_REMINDER = false;
+                        BOTH_TYPES = false;
+                    }
+                }
+            });
+
+            intentHasExtraCode = true;
+
             Objects.requireNonNull(getSupportActionBar()).setTitle("Edit appointment");
             submit.setText(getResources().getText(R.string.save));
 
@@ -399,6 +441,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
             clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
             clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
+            dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
             //edit message
 
             if (extraReminderSwitch == REMINDER_ON) {
@@ -422,7 +465,9 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             }
 
         } else {
+
             Objects.requireNonNull(getSupportActionBar()).setTitle("New appointment");
+            intentHasExtraCode = false;
         }
 
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
@@ -464,7 +509,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     }
 
     private void validateAndSubmitForm() {
-        
+
         String name = nameEditText.getText().toString();
         String phone = phoneEditText.getText().toString();
         String email = emailEditText.getText().toString();
@@ -483,13 +528,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Log.d(TAG, "validateAndSubmitForm: " + dateTimeString);
-
-
-        SimpleDateFormat format = new SimpleDateFormat("dd MMM", Locale.getDefault());
-        Date today = new Date();
-
-        String dateAdded = format.format(today);
 
         boolean basicDataIsAvailable = false;
         boolean reminderDataIsAvailable = false;
@@ -566,60 +604,136 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_ON) {
                 if (reminderDataIsAvailable && clientReminderDataIsAvailable) {
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_OFF) {
                 if (reminderDataIsAvailable) {
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_ON) {
                 if (clientReminderDataIsAvailable) {
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_OFF) {
                 addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, dateAdded,SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
             }
         }
     }
 
-    private void addFormDataToIntent(String name, String phone, String email, String desc,
-                                     String date, String time, long reminderTime,
-                                     String clientReminderDate, String clientReminderTime, int reminderState,
-                                     int clientReminderState, String dateAdded, boolean isSms,
-                                     boolean isEmail, boolean isBoth, String dateTime) {
-        Intent intent = new Intent(CreateEditAppointmentActivity.this, MainActivity.class);
-        intent.putExtra("name", name);
-        intent.putExtra("phone", phone);
-        intent.putExtra("email", email);
-        intent.putExtra("desc", desc);
-        intent.putExtra("date", date);
-        intent.putExtra("time", time);
-        intent.putExtra("reminderTime", reminderTime);
-        intent.putExtra("clientReminderDate", clientReminderDate);
-        intent.putExtra("clientReminderTime", clientReminderTime);
-        intent.putExtra("reminderState", reminderState);
-        intent.putExtra("clientReminderState", clientReminderState);
-        intent.putExtra("dateAdded", dateAdded);
-        intent.putExtra("is_sms", isSms);
-        intent.putExtra("is_email", isEmail);
-        intent.putExtra("is_both", isBoth);
-        intent.putExtra("dateTime", dateTime);
+    private void addFormDataToIntent(String name, String phone, String email, String desc, String date, String time, int reminderTime, String clientReminderDate,
+                                     String clientReminderTime, int reminderState, int clientReminderState, boolean isSms, boolean isEmail, boolean isBoth, String dateTime) {
 
-        addAppointmentToCalendar();
+        if (intentHasExtraCode) {
 
-        int id = getIntent().getIntExtra(EXTRA_ID, -1);
-        if (id != -1) {
-            intent.putExtra(EXTRA_ID, id);
+            int intentExtraCode = getIntent().getIntExtra(EXTRA_INTENT_CODE, 0);
+
+            if (intentExtraCode == 1) {
+
+                Intent intent = new Intent(CreateEditAppointmentActivity.this, MainActivity.class);
+
+                intent.putExtra("name", name);
+                intent.putExtra("phone", phone);
+                intent.putExtra("email", email);
+                intent.putExtra("desc", desc);
+                intent.putExtra("date", date);
+                intent.putExtra("time", time);
+                intent.putExtra("reminderTime", reminderTime);
+                intent.putExtra("clientReminderDate", clientReminderDate);
+                intent.putExtra("clientReminderTime", clientReminderTime);
+                intent.putExtra("reminderState", reminderState);
+                intent.putExtra("clientReminderState", clientReminderState);
+                intent.putExtra("clientReminderMessage", "message");
+                intent.putExtra("is_sms", isSms);
+                intent.putExtra("is_email", isEmail);
+                intent.putExtra("is_both", isBoth);
+                intent.putExtra("dateTime", dateTime);
+                intent.putExtra("dateAdded", dateAdded);
+
+//                addAppointmentToCalendar();
+
+                int id = getIntent().getIntExtra(EXTRA_ID, -1);
+                if (id != -1) {
+                    intent.putExtra(EXTRA_ID, id);
+                }
+
+                setResult(2, intent);
+                finish();
+
+            } else if (intentExtraCode == 2) {
+
+                Intent intent = new Intent(CreateEditAppointmentActivity.this, AppointmentDetailsActivity.class);
+
+                intent.putExtra("name", name);
+                intent.putExtra("phone", phone);
+                intent.putExtra("email", email);
+                intent.putExtra("desc", desc);
+                intent.putExtra("date", date);
+                intent.putExtra("time", time);
+                intent.putExtra("reminderTime", reminderTime);
+                intent.putExtra("clientReminderDate", clientReminderDate);
+                intent.putExtra("clientReminderTime", clientReminderTime);
+                intent.putExtra("reminderState", reminderState);
+                intent.putExtra("clientReminderState", clientReminderState);
+                intent.putExtra("clientReminderMessage", "message");
+                intent.putExtra("is_sms", isSms);
+                intent.putExtra("is_email", isEmail);
+                intent.putExtra("is_both", isBoth);
+                intent.putExtra("dateTime", dateTime);
+                intent.putExtra("dateAdded", dateAdded);
+
+                addAppointmentToCalendar();
+
+                int id = getIntent().getIntExtra(EXTRA_ID, -1);
+                if (id != -1) {
+                    intent.putExtra(EXTRA_ID, id);
+                }
+
+                setResult(2, intent);
+                finish();
+            }
+        } else {
+
+            Intent intent = new Intent(CreateEditAppointmentActivity.this, MainActivity.class);
+
+            SimpleDateFormat format = new SimpleDateFormat("dd MMM", Locale.getDefault());
+            Date today = new Date();
+
+            String dateAdded = format.format(today);
+
+            intent.putExtra("name", name);
+            intent.putExtra("phone", phone);
+            intent.putExtra("email", email);
+            intent.putExtra("desc", desc);
+            intent.putExtra("date", date);
+            intent.putExtra("time", time);
+            intent.putExtra("reminderTime", reminderTime);
+            intent.putExtra("clientReminderDate", clientReminderDate);
+            intent.putExtra("clientReminderTime", clientReminderTime);
+            intent.putExtra("reminderState", reminderState);
+            intent.putExtra("clientReminderState", clientReminderState);
+            intent.putExtra("dateAdded", dateAdded);
+            intent.putExtra("clientReminderMessage", "message");
+            intent.putExtra("is_sms", isSms);
+            intent.putExtra("is_email", isEmail);
+            intent.putExtra("is_both", isBoth);
+            intent.putExtra("dateTime", dateTime);
+
+//            addAppointmentToCalendar();
+
+            int id = getIntent().getIntExtra(EXTRA_ID, -1);
+            if (id != -1) {
+                intent.putExtra(EXTRA_ID, id);
+            }
+
+            setResult(2, intent);
+            finish();
         }
-
-        setResult(2, intent);
-        finish();
     }
 
     @Override
@@ -637,17 +751,17 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
-            if ( v instanceof EditText) {
+            if (v instanceof EditText) {
                 Rect outRect = new Rect();
                 v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                if (!outRect.contains((int) event.getRawX(), (int) event.getRawY())) {
                     v.clearFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     Objects.requireNonNull(imm).hideSoftInputFromWindow(v.getWindowToken(), 0);
                 }
             }
         }
-        return super.dispatchTouchEvent( event );
+        return super.dispatchTouchEvent(event);
     }
 
     @Override

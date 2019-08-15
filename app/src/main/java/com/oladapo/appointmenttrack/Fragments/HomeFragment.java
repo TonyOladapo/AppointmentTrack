@@ -1,5 +1,6 @@
 package com.oladapo.appointmenttrack.Fragments;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
@@ -12,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +44,9 @@ public class HomeFragment extends Fragment {
 
     private static final int RC_ADD_CLIENT = 2;
     private static final int RC_APPOINTMENT_DETAILS = 3;
+    private static final int RC_EDIT_APPOINTMENT = 5;
+
+    private static final String TAG = "vkv";
 
     private ConstraintLayout constraintLayout;
 
@@ -92,6 +95,7 @@ public class HomeFragment extends Fragment {
             public void onItemClick(Appointments appointments) {
 
                 Intent intent = new Intent(getContext(), AppointmentDetailsActivity.class);
+
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_ID, appointments.getId());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_CLIENT_NAME, appointments.getClientName());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_PHONE, appointments.getClientPhone());
@@ -109,6 +113,7 @@ public class HomeFragment extends Fragment {
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_BOTH, appointments.isBoth());
                 intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE_TIME, appointments.getDateTime());
+                intent.putExtra(AppointmentDetailsActivity.EXTRA_DATE_ADDED, appointments.getDateAdded());
 
                 startActivityForResult(intent, RC_APPOINTMENT_DETAILS);
             }
@@ -117,10 +122,76 @@ public class HomeFragment extends Fragment {
         adapter.setOnItemLongClickListener(new AppointmentAdapter.OnItemLongClickListener() {
             @Override
             public void onItemLongClick(Appointments appointments) {
-                new AlertDialog.Builder(Objects.requireNonNull(getContext()))
-                        .show();
+                longClickAlertDialog(appointments);
             }
         });
+    }
+
+    private void longClickAlertDialog(final Appointments appointments) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getContext()));
+
+        String[] options = {"Renew", "Edit", "Delete"};
+
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i) {
+                    case 0:
+                        Log.d(TAG, "onClick: Renew");
+                        break;
+
+                    case 1:
+                        editAppointment(appointments);
+                        break;
+
+                    case 2:
+                        deleteAppointment(appointments);
+                        break;
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void editAppointment(Appointments appointments) {
+        Intent intent = new Intent(getContext(), CreateEditAppointmentActivity.class);
+
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_INTENT_CODE, 1);
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_ID, appointments.getId());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_NAME, appointments.getClientName());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_PHONE, appointments.getClientPhone());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL, appointments.getClientEmail());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE, appointments.getDate());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_TIME, appointments.getTime());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DESC, appointments.getDescription());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_TIME, appointments.getReminderTime());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_DATE, appointments.getClientReminderDate());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_TIME, appointments.getClientReminderTime());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_MESSAGE, appointments.getClientReminderMessage());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_REMINDER_STATE, appointments.getReminderState());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_CLIENT_REMINDER_STATE, appointments.getClientReminderState());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_SMS_REMINDER, appointments.isSms());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_EMAIL_REMINDER, appointments.isEmail());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_BOTH, appointments.isBoth());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE_TIME, appointments.getDateTime());
+        intent.putExtra(CreateEditAppointmentActivity.EXTRA_DATE_ADDED, appointments.getDateAdded());
+
+        startActivityForResult(intent, RC_EDIT_APPOINTMENT);
+    }
+
+    private void deleteAppointment(Appointments appointments) {
+        viewModel.delete(appointments);
+        Snackbar.make(constraintLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
+                .setAction("UNDO", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                })
+                .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
+                .show();
     }
 
     @Override
@@ -129,23 +200,25 @@ public class HomeFragment extends Fragment {
 
         if (requestCode == RC_ADD_CLIENT && resultCode == 2) {
 
+            int reminderTime = data.getIntExtra("reminderTime", 0);
+            int reminderState = data.getIntExtra("reminderState", 0);
+            int clientReminderState = data.getIntExtra("clientReminderState", 0);
+
             String name = data.getStringExtra("name");
             String phone = data.getStringExtra("phone");
             String email = data.getStringExtra("email");
             String desc = data.getStringExtra("desc");
             String date = data.getStringExtra("date");
             String time = data.getStringExtra("time");
-            int reminderTime = data.getIntExtra("reminderTime", 0);
             String clientReminderDate = data.getStringExtra("clientReminderDate");
             String clientReminderTime = data.getStringExtra("clientReminderTime");
-            int reminderState = data.getIntExtra("reminderState", 0);
-            int clientReminderState = data.getIntExtra("clientReminderState", 0);
-            String reminderMessage = "message";
+            String reminderMessage = data.getStringExtra("clientReminderMessage");
+            String dateTime = data.getStringExtra("dateTime");
             String dateAdded = data.getStringExtra("dateAdded");
+
             boolean isSms = data.getBooleanExtra("is_sms", false);
             boolean isEmail = data.getBooleanExtra("is_email", false);
             boolean isBoth = data.getBooleanExtra("is_both", false);
-            String dateTime = data.getStringExtra("dateTime");
 
             Appointments appointments = new Appointments(name, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
                     clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
@@ -153,6 +226,38 @@ public class HomeFragment extends Fragment {
             viewModel.insert(appointments);
 
             Snackbar.make(constraintLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
+
+        } else if (requestCode == RC_EDIT_APPOINTMENT && resultCode == 2) {
+
+            int id = data.getIntExtra("id", -1);
+            int reminderTime = data.getIntExtra("reminderTime", 0);
+            int reminderState = data.getIntExtra("reminderState", 0);
+            int clientReminderState = data.getIntExtra("clientReminderState", 0);
+
+            String name = data.getStringExtra("name");
+            String phone = data.getStringExtra("phone");
+            String email = data.getStringExtra("email");
+            String desc = data.getStringExtra("desc");
+            String date = data.getStringExtra("date");
+            String time = data.getStringExtra("time");
+            String clientReminderDate = data.getStringExtra("clientReminderDate");
+            String clientReminderTime = data.getStringExtra("clientReminderTime");
+            String reminderMessage = data.getStringExtra("clientReminderMessage");
+            String dateTime = data.getStringExtra("dateTime");
+            String dateAdded = data.getStringExtra("dateAdded");
+
+            boolean isSms = data.getBooleanExtra("is_sms", false);
+            boolean isEmail = data.getBooleanExtra("is_email", false);
+            boolean isBoth = data.getBooleanExtra("is_both", false);
+
+            Appointments appointments = new Appointments(name, phone, email, desc, date, time, reminderTime, reminderState, clientReminderState,
+                    clientReminderDate, clientReminderTime, reminderMessage, dateAdded, isSms, isEmail, isBoth, dateTime);
+
+            appointments.setId(id);
+
+            viewModel.update(appointments);
+
+            Snackbar.make(constraintLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
         }
     }
 

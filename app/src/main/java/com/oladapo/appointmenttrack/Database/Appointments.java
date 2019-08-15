@@ -2,7 +2,6 @@ package com.oladapo.appointmenttrack.Database;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 @Entity(tableName = "appointments_table")
 public class Appointments {
