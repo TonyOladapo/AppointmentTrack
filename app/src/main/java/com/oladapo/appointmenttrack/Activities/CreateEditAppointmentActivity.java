@@ -655,7 +655,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 intent.putExtra("dateTime", dateTime);
                 intent.putExtra("dateAdded", dateAdded);
 
-//                addAppointmentToCalendar();
+                addAppointmentToCalendar();
 
                 int id = getIntent().getIntExtra(EXTRA_ID, -1);
                 if (id != -1) {
@@ -665,7 +665,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 setResult(2, intent);
                 finish();
 
-            } else if (intentExtraCode == 2) {
+            } else if (intentExtraCode == 2 || intentExtraCode == 3) {
 
                 Intent intent = new Intent(CreateEditAppointmentActivity.this, AppointmentDetailsActivity.class);
 
@@ -724,7 +724,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             intent.putExtra("is_both", isBoth);
             intent.putExtra("dateTime", dateTime);
 
-//            addAppointmentToCalendar();
+            addAppointmentToCalendar();
 
             int id = getIntent().getIntExtra(EXTRA_ID, -1);
             if (id != -1) {
