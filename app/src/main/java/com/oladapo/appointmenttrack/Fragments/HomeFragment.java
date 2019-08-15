@@ -13,11 +13,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -35,6 +36,7 @@ import com.oladapo.appointmenttrack.Database.Appointments;
 import com.oladapo.appointmenttrack.Database.ViewModel;
 import com.oladapo.appointmenttrack.R;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,9 +49,7 @@ public class HomeFragment extends Fragment {
     private static final int RC_EDIT_APPOINTMENT = 5;
     private static final int RC_RENEW_APPOINTMENT = 6;
 
-    private static final String TAG = "vkv";
-
-    private ConstraintLayout constraintLayout;
+    private CoordinatorLayout coordinatorLayout;
 
     @Nullable
     @Override
@@ -71,7 +71,9 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        constraintLayout = view.findViewById(R.id.homeLayout);
+        coordinatorLayout = view.findViewById(R.id.homeLayout);
+
+        final TextView noAppointmentsTextView = view.findViewById(R.id.no_appointments);
 
         final AppointmentAdapter adapter = new AppointmentAdapter();
 
@@ -88,6 +90,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(List<Appointments> appointments) {
                 adapter.submitList(appointments);
+
+                if (appointments.size() < 1) {
+                    noAppointmentsTextView.setVisibility(View.VISIBLE);
+                } else {
+                    noAppointmentsTextView.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -184,7 +192,7 @@ public class HomeFragment extends Fragment {
 
     private void deleteAppointment(Appointments appointments) {
         viewModel.delete(appointments);
-        Snackbar.make(constraintLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
+        Snackbar.make(coordinatorLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
                 .setAction("UNDO", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -252,7 +260,7 @@ public class HomeFragment extends Fragment {
 
             viewModel.insert(appointments);
 
-            Snackbar.make(constraintLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(coordinatorLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
 
         } else if (requestCode == RC_EDIT_APPOINTMENT && resultCode == 2) {
 
@@ -284,7 +292,7 @@ public class HomeFragment extends Fragment {
 
             viewModel.update(appointments);
 
-            Snackbar.make(constraintLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(coordinatorLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
 
         } else if (requestCode == RC_RENEW_APPOINTMENT && resultCode == 2) {
 
@@ -313,7 +321,7 @@ public class HomeFragment extends Fragment {
 
             viewModel.insert(appointments);
 
-            Snackbar.make(constraintLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(coordinatorLayout, "Appointment added", Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -326,7 +334,7 @@ public class HomeFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.deleteAllNotes) {
             viewModel.deleteAllAppointments();
-            Snackbar.make(constraintLayout, "All appointments deleted", Snackbar.LENGTH_LONG)
+            Snackbar.make(coordinatorLayout, "All appointments deleted", Snackbar.LENGTH_LONG)
                     .setAction("Undo", new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -372,7 +380,7 @@ public class HomeFragment extends Fragment {
                 }
             });
 
-            Snackbar.make(constraintLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
+            Snackbar.make(coordinatorLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
                         .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {

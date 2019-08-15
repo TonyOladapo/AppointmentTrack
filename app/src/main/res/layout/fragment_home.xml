@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/homeLayout"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/home_recyclerView"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:listitem="@layout/item_home_recyclerview">
+        android:layout_height="match_parent">
 
-    </androidx.recyclerview.widget.RecyclerView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_home_recyclerview">
 
-    <TextView
-        android:id="@+id/no_appointments"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:fontFamily="sans-serif-light"
-        android:text="@string/no_scheduled_appointments"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/home_recyclerView"
-        app:layout_constraintEnd_toEndOf="@+id/home_recyclerView"
-        app:layout_constraintHorizontal_bias="0.468"
-        app:layout_constraintStart_toStartOf="@+id/home_recyclerView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.499" />
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/no_appointments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/no_scheduled_appointments"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/home_recyclerView"
+            app:layout_constraintEnd_toEndOf="@+id/home_recyclerView"
+            app:layout_constraintHorizontal_bias="0.468"
+            app:layout_constraintStart_toStartOf="@+id/home_recyclerView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.499" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -42,8 +48,5 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         app:backgroundTint="@color/colorPrimaryDark"
-        app:layout_constraintBottom_toBottomOf="@+id/home_recyclerView"
-        app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_add_white_24dp" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

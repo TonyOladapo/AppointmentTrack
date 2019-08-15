@@ -10,7 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.ViewModelProviders;
@@ -77,7 +77,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     TextView clientNameTextView;
 
     FloatingActionButton fabMain;
-    ConstraintLayout constraintLayout;
+    CoordinatorLayout coordinatorLayout;
 
     ViewModel viewModel;
 
@@ -86,7 +86,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_details);
 
-        constraintLayout = findViewById(R.id.layoutAppointmentDetails);
+        coordinatorLayout = findViewById(R.id.layoutAppointmentDetails);
 
         clientNameTextView = findViewById(R.id.clientNameDetails);
         phoneTextView = findViewById(R.id.appointment_details_phone);
@@ -160,8 +160,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         }
 
         clientNameTextView.setText(clientName);
+
         dateTextView.setText(date);
+        dateTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+
         timeTextView.setText(time);
+        timeTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
 
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -208,7 +212,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             int id = Objects.requireNonNull(data).getIntExtra(CreateEditAppointmentActivity.EXTRA_ID, -1);
 
             if (id == -1) {
-                Snackbar.make(constraintLayout, "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(coordinatorLayout, "Something went wrong! Could not update.", Snackbar.LENGTH_LONG).show();
                 return;
             }
 
@@ -274,7 +278,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
 
             viewModel.update(appointments);
 
-            Snackbar.make(constraintLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(coordinatorLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
         }
     }
 }
