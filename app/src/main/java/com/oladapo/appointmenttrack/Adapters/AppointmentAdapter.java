@@ -88,7 +88,7 @@ public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAda
                     if (listener != null && position != RecyclerView.NO_POSITION) {
                         longClickListener.onItemLongClick(getItem(position));
                     }
-                    return false;
+                    return true;
                 }
             });
         }
