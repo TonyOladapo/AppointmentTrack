@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,7 +35,6 @@ import com.oladapo.appointmenttrack.Database.Appointments;
 import com.oladapo.appointmenttrack.Database.ViewModel;
 import com.oladapo.appointmenttrack.R;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -191,7 +189,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void deleteAppointment(Appointments appointments) {
-        viewModel.delete(appointments);
         Snackbar.make(coordinatorLayout, "Appointment deleted", Snackbar.LENGTH_LONG)
                 .setAction("UNDO", new View.OnClickListener() {
                     @Override
@@ -201,6 +198,7 @@ public class HomeFragment extends Fragment {
                 })
                 .setActionTextColor(getResources().getColor(R.color.colorPrimaryDark))
                 .show();
+        viewModel.delete(appointments);
     }
 
     private void renewAppointment(Appointments appointments) {
@@ -366,7 +364,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-            return false;
+            return true;
         }
 
         @Override

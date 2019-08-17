@@ -26,7 +26,4 @@ public interface DAO {
 
     @Query("SELECT * FROM appointments_table ORDER BY dateTime")
     LiveData<List<Appointments>> getAllAppointments();
-
-    @Query("SELECT * FROM appointments_table LIMIT 1")
-    LiveData<List<Appointments>> getAnyAppointment();
 }

@@ -1,38 +1,17 @@
 package com.oladapo.appointmenttrack.Activities;
 
 import android.animation.ObjectAnimator;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -47,21 +26,8 @@ import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
 import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
 import com.oladapo.appointmenttrack.R;
 
-import java.util.Objects;
-
 public class MainActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
-
-    private static final int RC_SIGN_IN = 1;
-
-    private static final String TAG = "vkv";
-
-    private PrimaryDrawerItem logout, login;
-    private Drawer drawer;
-
-    private CoordinatorLayout coordinatorLayout;
     private Toolbar toolbar;
 
     @Override
@@ -81,181 +47,15 @@ public class MainActivity extends AppCompatActivity {
             ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
         }
 
-        mAuth = FirebaseAuth.getInstance();
-
         initToolbar();
 
         initDrawer();
-
-        coordinatorLayout = findViewById(R.id.coordinator_layout);
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
         transaction.replace(R.id.layout_container, new HomeFragment());
         transaction.commit();
-
-        signIn();
-    }
-
-    private void signIn() {
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-
-                if (user != null) {
-                    if (!user.isAnonymous()) {
-                        if (drawer.getDrawerItem(1) != null) {
-                            drawer.removeItem(1);
-                        }
-                        if (drawer.getDrawerItem(7) == null) {
-                            drawer.addItem(logout);
-                        }
-                    } else {
-                        if (drawer.getDrawerItem(1) == null) {
-                            drawer.addItemAtPosition(login, 1);
-                        }
-                        if (drawer.getDrawerItem(7) != null) {
-                            drawer.removeItem(7);
-                        }
-                    }
-                } else {
-                    mAuth.signInAnonymously()
-                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        Snackbar.make(coordinatorLayout, "You are signed in with an anonymous account", Snackbar.LENGTH_LONG).show();
-
-                                        new Handler().postDelayed(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                linkAccountAlertDialog();
-                                            }
-                                        }, 3000);
-                                    } else {
-                                        if (drawer.getDrawerItem(1) == null) {
-                                            drawer.addItem(login);
-                                        }
-                                    }
-                                }
-                            });
-                }
-            }
-        };
-    }
-
-    //alertDialog for linking accounts
-    private void linkAccountAlertDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Would you like to link your Google account?")
-                .setMessage("You are currently signed in as an anonymous user and in the " +
-                        "instance of losing access to this account by uninstalling the app or clearing app data," +
-                        " you would not regain access to the account. The only way to get back your account is by linking " +
-                        "your Google account to avoid losing your data.")
-                .setPositiveButton("Link Google account", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        signInWithGoogle();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        //Do something
-                    }
-                })
-                .show();
-    }
-
-    //google sign in
-    private void signInWithGoogle() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder()
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
-        Intent intent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(intent, RC_SIGN_IN);
-    }
-
-    //onActivityResult for google sign in
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                GoogleSignInAccount acct = result.getSignInAccount();
-
-                linkWithGoogle(Objects.requireNonNull(acct));
-            } else {
-                Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                Log.i(TAG, result.toString());
-            }
-        }
-    }
-
-    //links google and anonymous accounts
-    private void linkWithGoogle(final GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        Objects.requireNonNull(mAuth.getCurrentUser()).linkWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "link account with google successful");
-                        } else {
-                            Exception exception = task.getException();
-                            if (exception instanceof FirebaseAuthUserCollisionException) {
-                                Log.d(TAG, "google account collision");
-                                firebaseAuthWithGoogle(acct);
-
-                            } else {
-                                Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-                });
-    }
-
-    //create user in firebase
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "account creation successful");
-                        } else {
-                            Snackbar.make(coordinatorLayout, "Authentication failed!", Snackbar.LENGTH_LONG).show();
-                        }
-                    }
-                });
-    }
-
-    //signs out user
-    private void signOut() {
-        mAuth.signOut();
-        drawer.removeItem(7);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mAuth.addAuthStateListener(mAuthStateListener);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mAuth.removeAuthStateListener(mAuthStateListener);
     }
 
     private void initToolbar() {
@@ -273,16 +73,9 @@ public class MainActivity extends AppCompatActivity {
                 .withHeaderBackground(R.drawable.header_background)
                 .build();
 
-        login = new PrimaryDrawerItem()
-                .withName("Login")
-                .withIdentifier(1)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight);
-
         PrimaryDrawerItem home = new PrimaryDrawerItem()
                 .withName("Home")
-                .withIdentifier(2)
+                .withIdentifier(1)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedColorRes(R.color.colorLight)
                 .withSelectedTextColorRes(R.color.colorPrimaryDark)
@@ -290,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
         PrimaryDrawerItem calender = new PrimaryDrawerItem()
                 .withName("Calender")
-                .withIdentifier(3)
+                .withIdentifier(2)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedColorRes(R.color.colorLight)
                 .withSelectedTextColorRes(R.color.colorPrimaryDark)
@@ -298,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
         PrimaryDrawerItem reminders = new PrimaryDrawerItem()
                 .withName("Reminders")
-                .withIdentifier(4)
+                .withIdentifier(3)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedColorRes(R.color.colorLight)
                 .withSelectedTextColorRes(R.color.colorPrimaryDark)
@@ -306,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         PrimaryDrawerItem settings = new PrimaryDrawerItem()
                 .withName("Settings")
-                .withIdentifier(5)
+                .withIdentifier(4)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedColorRes(R.color.colorLight)
                 .withSelectedTextColorRes(R.color.colorPrimaryDark)
@@ -314,20 +107,13 @@ public class MainActivity extends AppCompatActivity {
 
         PrimaryDrawerItem about = new PrimaryDrawerItem()
                 .withName("About")
-                .withIdentifier(6)
+                .withIdentifier(5)
                 .withTextColorRes(R.color.colorPrimaryDark)
                 .withSelectedColorRes(R.color.colorLight)
                 .withSelectedTextColorRes(R.color.colorPrimaryDark)
                 .withIcon(R.drawable.ic_info_outline_black_24dp);
 
-        logout = new PrimaryDrawerItem()
-                .withName("Logout")
-                .withIdentifier(7)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight);
-
-        drawer = new DrawerBuilder()
+        new DrawerBuilder()
                 .withActivity(this)
                 .withAccountHeader(header)
                 .withToolbar(toolbar)
@@ -347,47 +133,42 @@ public class MainActivity extends AppCompatActivity {
                         long i = drawerItem.getIdentifier();
 
                         if (i == 1) {
-                            signInWithGoogle();
-
-                        } else if (i == 2) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new HomeFragment())
                                     .commit();
 
-                        } else if (i == 3) {
+                        } else if (i == 2) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new CalenderFragment())
                                     .commit();
 
-                        } else if (i == 4) {
+                        } else if (i == 3) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new RemindersFragment())
                                     .commit();
 
-                        } else if (i == 5) {
+                        } else if (i == 4) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new SettingsFragment())
                                     .commit();
 
-                        } else if (i == 6) {
+                        } else if (i == 5) {
                             getSupportFragmentManager().beginTransaction()
                                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new AboutFragment())
                                     .commit();
 
-                        } else if (i == 7) {
-                            signOut();
                         }
-                        return false;
+                        return true;
                     }
                 })
                 .build();

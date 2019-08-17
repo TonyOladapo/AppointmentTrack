@@ -11,13 +11,11 @@ class Repository {
 
     private DAO dao;
     private LiveData<List<Appointments>>allAppointments;
-    private LiveData<List<Appointments>>anyAppointment;
 
     Repository(Application application) {
         AppointmentsDatabase database = AppointmentsDatabase.getInstance(application);
         dao = database.appointmentsDao();
         allAppointments = dao.getAllAppointments();
-        anyAppointment = dao.getAnyAppointment();
     }
 
     void insert(Appointments appointments) {
@@ -38,10 +36,6 @@ class Repository {
 
     LiveData<List<Appointments>> getAllAppointments() {
         return allAppointments;
-    }
-
-    LiveData<List<Appointments>> getAnyAppointment() {
-        return anyAppointment;
     }
 
     private static class InsertAppointmentsAsyncTask extends AsyncTask<Appointments, Void, Void> {

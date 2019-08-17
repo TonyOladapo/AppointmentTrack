@@ -386,6 +386,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
         Intent intent = getIntent();
 
+        int intentExtraCode = getIntent().getIntExtra(EXTRA_INTENT_CODE, 0);
+
         if (intent.hasExtra(EXTRA_ID) && intent.hasExtra(EXTRA_INTENT_CODE)) {
 
             reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -423,45 +425,59 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
             intentHasExtraCode = true;
 
-            Objects.requireNonNull(getSupportActionBar()).setTitle("Edit appointment");
-            submit.setText(getResources().getText(R.string.save));
+            if (intentExtraCode == 3) {
 
-            int extraReminderSwitch = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
-            int extraClientReminderSwitch = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
-            boolean extraSms = intent.getBooleanExtra(EXTRA_SMS_REMINDER, false);
-            boolean extraEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
-            boolean extraBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
+                reminderSwitch.setChecked(false);
+                clientReminderSwitch.setChecked(false);
 
-            nameEditText.setText(intent.getStringExtra(EXTRA_CLIENT_NAME));
-            phoneEditText.setText(intent.getStringExtra(EXTRA_PHONE));
-            emailEditText.setText(intent.getStringExtra(EXTRA_EMAIL));
-            descEditText.setText(intent.getStringExtra(EXTRA_DESC));
-            dateEditText.setText(intent.getStringExtra(EXTRA_DATE));
-            timeEditText.setText(intent.getStringExtra(EXTRA_TIME));
-            reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
-            clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
-            clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
-            dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
-            //edit message
+                nameEditText.setText(intent.getStringExtra(EXTRA_CLIENT_NAME));
+                phoneEditText.setText(intent.getStringExtra(EXTRA_PHONE));
+                emailEditText.setText(intent.getStringExtra(EXTRA_EMAIL));
+                descEditText.setText(intent.getStringExtra(EXTRA_DESC));
+                dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
 
-            if (extraReminderSwitch == REMINDER_ON) {
-                reminderSwitch.setChecked(true);
-            }
+            } else {
 
-            if (extraClientReminderSwitch == CLIENT_REMINDER_ON) {
-                clientReminderSwitch.setChecked(true);
-            }
+                Objects.requireNonNull(getSupportActionBar()).setTitle("Edit appointment");
+                submit.setText(getResources().getText(R.string.save));
 
-            if (extraSms) {
-                SMS_REMINDER = true;
-            }
+                int extraReminderSwitch = intent.getIntExtra(EXTRA_REMINDER_STATE, 0);
+                int extraClientReminderSwitch = intent.getIntExtra(EXTRA_CLIENT_REMINDER_STATE, 0);
+                boolean extraSms = intent.getBooleanExtra(EXTRA_SMS_REMINDER, false);
+                boolean extraEmail = intent.getBooleanExtra(EXTRA_EMAIL_REMINDER, false);
+                boolean extraBoth = intent.getBooleanExtra(EXTRA_BOTH, false);
 
-            if (extraEmail) {
-                EMAIL_REMINDER = true;
-            }
+                nameEditText.setText(intent.getStringExtra(EXTRA_CLIENT_NAME));
+                phoneEditText.setText(intent.getStringExtra(EXTRA_PHONE));
+                emailEditText.setText(intent.getStringExtra(EXTRA_EMAIL));
+                descEditText.setText(intent.getStringExtra(EXTRA_DESC));
+                dateEditText.setText(intent.getStringExtra(EXTRA_DATE));
+                timeEditText.setText(intent.getStringExtra(EXTRA_TIME));
+                reminderTime = intent.getIntExtra(EXTRA_REMINDER_TIME, 0);
+                clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
+                clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
+                dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
+                //edit message
 
-            if (extraBoth) {
-                BOTH_TYPES = true;
+                if (extraReminderSwitch == REMINDER_ON) {
+                    reminderSwitch.setChecked(true);
+                }
+
+                if (extraClientReminderSwitch == CLIENT_REMINDER_ON) {
+                    clientReminderSwitch.setChecked(true);
+                }
+
+                if (extraSms) {
+                    SMS_REMINDER = true;
+                }
+
+                if (extraEmail) {
+                    EMAIL_REMINDER = true;
+                }
+
+                if (extraBoth) {
+                    BOTH_TYPES = true;
+                }
             }
 
         } else {
@@ -469,9 +485,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             Objects.requireNonNull(getSupportActionBar()).setTitle("New appointment");
             intentHasExtraCode = false;
         }
-
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
