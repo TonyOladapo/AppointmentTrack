@@ -3,7 +3,9 @@ package com.oladapo.appointmenttrack.Activities;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -43,6 +45,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.oladapo.appointmenttrack.Fragments.DatePickerFragment;
 import com.oladapo.appointmenttrack.R;
+import com.oladapo.appointmenttrack.Receiver.ReminderBroadcastReceiver;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -91,6 +94,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     int reminderTime;
     int reminderState;
     int clientReminderState;
+
     String clientReminderDate;
     String clientReminderTime;
     String dateAdded;
@@ -865,12 +869,26 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 reminder.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
                 reminder.put(CalendarContract.Reminders.MINUTES, reminderTime);
 
+                beginTime.add(Calendar.MINUTE, -reminderTime);
+                startNotificationAlarm(beginTime, eventTitle, dateTimeString);
+
                 getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, reminder);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void startNotificationAlarm(Calendar calendar, String name, String date) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
+
+        intent.putExtra("name", name);
+        intent.putExtra("date", date);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
+
+        Objects.requireNonNull(alarmManager).setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 
     private void scheduleClientReminder() {
