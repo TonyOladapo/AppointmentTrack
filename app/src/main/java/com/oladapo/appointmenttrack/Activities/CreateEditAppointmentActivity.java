@@ -55,6 +55,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Random;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
@@ -838,6 +839,9 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             String eventTitle = nameEditText.getText().toString();
             String dateTimeString = dateEditText.getText().toString() + timeEditText.getText().toString();
 
+            String notificationDate = dateEditText.getText().toString();
+            String notificationTime = timeEditText.getText().toString();
+
             SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyyHH:mm", Locale.getDefault());
             Date date = format.parse(dateTimeString);
 
@@ -870,7 +874,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 reminder.put(CalendarContract.Reminders.MINUTES, reminderTime);
 
                 beginTime.add(Calendar.MINUTE, -reminderTime);
-                startNotificationAlarm(beginTime, eventTitle, dateTimeString);
+
+                startNotificationAlarm(beginTime, eventTitle, notificationDate, notificationTime);
 
                 getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, reminder);
             }
@@ -879,12 +884,13 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         }
     }
 
-    private void startNotificationAlarm(Calendar calendar, String name, String date) {
+    private void startNotificationAlarm(Calendar calendar, String name, String date, String time) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
 
         intent.putExtra("name", name);
         intent.putExtra("date", date);
+        intent.putExtra("time", time);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
 

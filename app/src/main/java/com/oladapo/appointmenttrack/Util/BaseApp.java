@@ -25,6 +25,10 @@ public class BaseApp extends Application {
     public void createChannel() {
         NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
         notificationChannel.setDescription("Reminder notification");
+        notificationChannel.enableVibration(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            notificationChannel.canBubble();
+        }
 
         NotificationManager manager = getSystemService(NotificationManager.class);
         Objects.requireNonNull(manager).createNotificationChannel(notificationChannel);

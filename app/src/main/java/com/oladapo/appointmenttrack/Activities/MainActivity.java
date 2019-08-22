@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 .withCompactStyle(true)
                 .withActivity(this)
                 .withTranslucentStatusBar(true)
-                .withHeaderBackground(R.drawable.header_background)
+                .withHeaderBackground(R.color.colorPrimary)
                 .build();
 
         PrimaryDrawerItem home = new PrimaryDrawerItem()
