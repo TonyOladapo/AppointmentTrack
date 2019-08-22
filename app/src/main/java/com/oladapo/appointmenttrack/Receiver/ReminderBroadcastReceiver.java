@@ -46,7 +46,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             String message = "You have an appointment with " + name + " on " + date + " at " + time;
 
             Notification notification = new NotificationCompat.Builder(context, BaseApp.CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_calender_black_24dp)
+                    .setSmallIcon(R.drawable.ic_calendar_alert)
                     .setContentTitle(title)
                     .setContentText(message)
                     .setColor(color)

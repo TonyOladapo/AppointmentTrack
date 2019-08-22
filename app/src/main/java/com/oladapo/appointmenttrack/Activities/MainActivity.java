@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 .withActivity(this)
                 .withAccountHeader(header)
                 .withToolbar(toolbar)
+                .withCloseOnClick(true)
                 .addDrawerItems(
                         home,
                         calender,
@@ -166,9 +167,8 @@ public class MainActivity extends AppCompatActivity {
                                     .addToBackStack(null)
                                     .replace(R.id.layout_container, new AboutFragment())
                                     .commit();
-
                         }
-                        return true;
+                        return false;
                     }
                 })
                 .build();
