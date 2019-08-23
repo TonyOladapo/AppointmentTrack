@@ -892,7 +892,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         intent.putExtra("date", date);
         intent.putExtra("time", time);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE), intent, 0);
 
         Objects.requireNonNull(alarmManager).setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
