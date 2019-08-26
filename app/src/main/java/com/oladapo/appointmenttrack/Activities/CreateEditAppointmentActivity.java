@@ -11,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -50,6 +51,7 @@ import com.oladapo.appointmenttrack.Receiver.ReminderBroadcastReceiver;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -885,6 +887,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     }
 
     private void startNotificationAlarm(Calendar calendar, String name, String date, String time) {
+
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
 
@@ -892,8 +895,16 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         intent.putExtra("date", date);
         intent.putExtra("time", time);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE), intent, 0);
+        SharedPreferences preferences = getSharedPreferences("pref", 0);
+        SharedPreferences.Editor editor = preferences.edit();
 
+        editor.putString("nameNotif", name);
+        editor.putString("dateNotif", date);
+        editor.putString("timeNotif", time);
+
+        editor.apply();
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE), intent, 0);
         Objects.requireNonNull(alarmManager).setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 

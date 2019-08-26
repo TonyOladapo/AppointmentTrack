@@ -84,6 +84,7 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/phone_call_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"
@@ -111,6 +112,7 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/txt_msg_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"
@@ -138,6 +140,7 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/mail_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"

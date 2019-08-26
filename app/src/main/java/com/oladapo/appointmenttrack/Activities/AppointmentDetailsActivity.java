@@ -2,10 +2,14 @@ package com.oladapo.appointmenttrack.Activities;
 
 import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -65,7 +69,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     private boolean isEmail;
     private boolean isBoth;
 
-
     private static final int RC_EDIT_CLIENT = 4;
     private static final int RESULT_OK = 2;
 
@@ -77,7 +80,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
     TextView clientNameTextView;
 
     FloatingActionButton fabMain;
+
     CoordinatorLayout coordinatorLayout;
+
+    ImageButton phoneCallImageButton;
+    ImageButton textMsgImageButton;
+    ImageButton mailImageButton;
 
     ViewModel viewModel;
 
@@ -87,6 +95,10 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         setContentView(R.layout.activity_appointment_details);
 
         coordinatorLayout = findViewById(R.id.layoutAppointmentDetails);
+
+        phoneCallImageButton = findViewById(R.id.phone_call_image_button);
+        textMsgImageButton = findViewById(R.id.txt_msg_image_button);
+        mailImageButton = findViewById(R.id.mail_image_button);
 
         clientNameTextView = findViewById(R.id.clientNameDetails);
         phoneTextView = findViewById(R.id.appointment_details_phone);
@@ -147,11 +159,54 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         if (!phone.isEmpty()) {
             phoneTextView.setText(phone);
             phoneTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+
+            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openPhoneDialerIntent(phone);
+                }
+            });
+
+            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openSmsIntent(phone);
+                }
+            });
+
+        } else {
+            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
+                }
+            });
+
+            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         if (!email.isEmpty()) {
             emailTextView.setText(email);
             emailTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+
+            mailImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openEmailClientIntent(email);
+                }
+            });
+        } else {
+            mailImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Email not provided", Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         if (!desc.isEmpty()) {
@@ -175,6 +230,23 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
                 onBackPressed();
             }
         });
+    }
+
+    private void openPhoneDialerIntent(String phone) {
+        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phone, null));
+        startActivity(intent);
+    }
+
+    private void openEmailClientIntent(String email) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:" + email));
+        startActivity(Intent.createChooser(intent, "Select preferred email app"));
+    }
+
+    private void openSmsIntent(String phone) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("smsto:" + phone));
+        startActivity(Intent.createChooser(intent, "Select preferred sms app"));
     }
 
     private void startEditAppointment() {

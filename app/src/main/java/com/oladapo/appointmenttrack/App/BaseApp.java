@@ -1,4 +1,4 @@
-package com.oladapo.appointmenttrack.Util;
+package com.oladapo.appointmenttrack.App;
 
 import android.annotation.TargetApi;
 import android.app.Application;
