@@ -3,11 +3,13 @@ package com.oladapo.appointmenttrack.Database;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+
 @Entity(tableName = "appointments_table")
 public class Appointments {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
+
     private String clientName;
     private String clientPhone;
     private String clientEmail;
@@ -19,9 +21,11 @@ public class Appointments {
     private String clientReminderTime;
     private String clientReminderMessage;
     private String dateAdded;
+
     private int reminderTime;
     private int reminderState;
     private int clientReminderState;
+
     private boolean sms;
     private boolean email;
     private boolean both;

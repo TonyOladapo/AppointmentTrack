@@ -12,11 +12,13 @@ public class ViewModel extends AndroidViewModel {
 
     private Repository repository;
     private LiveData<List<Appointments>> allAppointments;
+    private LiveData<List<Appointments>> upcomingAppointments;
 
     public ViewModel(@NonNull Application application) {
         super(application);
         repository = new Repository(application);
         allAppointments = repository.getAllAppointments();
+        upcomingAppointments = repository.getUpcomingAppointments();
     }
 
     public void insert(Appointments appointments) {
@@ -37,5 +39,9 @@ public class ViewModel extends AndroidViewModel {
 
     public LiveData<List<Appointments>> getAllAppointments() {
         return allAppointments;
+    }
+
+    public LiveData<List<Appointments>> getUpcomingAppointments() {
+        return upcomingAppointments;
     }
 }

@@ -60,7 +60,7 @@ public class HomeFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        FloatingActionButton fab = view.findViewById(R.id.fab);
+        final FloatingActionButton fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -78,13 +78,29 @@ public class HomeFragment extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.home_recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy > 0) {
+                    if (fab.isShown()) {
+                        fab.hide();
+                    }
+                } else if (dy < 0){
+                    if (!fab.isShown()) {
+                        fab.show();
+                    }
+                }
+            }
+        });
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter));
 
         recyclerView.setAdapter(adapter);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
-        viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
+        viewModel.getUpcomingAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
             @Override
             public void onChanged(List<Appointments> appointments) {
                 adapter.submitList(appointments);
@@ -371,7 +387,7 @@ public class HomeFragment extends Fragment {
         public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
             viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
-            viewModel.getAllAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
+            viewModel.getUpcomingAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
                 @Override
                 public void onChanged(List<Appointments> appointments) {
                     mAdapter.submitList(appointments);

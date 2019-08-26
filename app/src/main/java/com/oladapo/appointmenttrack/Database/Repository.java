@@ -10,12 +10,14 @@ import java.util.List;
 class Repository {
 
     private DAO dao;
-    private LiveData<List<Appointments>>allAppointments;
+    private LiveData<List<Appointments>> allAppointments;
+    private LiveData<List<Appointments>> upcomingAppointments;
 
     Repository(Application application) {
         AppointmentsDatabase database = AppointmentsDatabase.getInstance(application);
         dao = database.appointmentsDao();
         allAppointments = dao.getAllAppointments();
+        upcomingAppointments = dao.getUpcomingAppointments();
     }
 
     void insert(Appointments appointments) {
@@ -36,6 +38,10 @@ class Repository {
 
     LiveData<List<Appointments>> getAllAppointments() {
         return allAppointments;
+    }
+
+    LiveData<List<Appointments>> getUpcomingAppointments() {
+        return upcomingAppointments;
     }
 
     private static class InsertAppointmentsAsyncTask extends AsyncTask<Appointments, Void, Void> {
