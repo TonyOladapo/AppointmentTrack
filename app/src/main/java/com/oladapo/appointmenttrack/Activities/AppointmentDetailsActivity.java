@@ -107,7 +107,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
         timeTextView = findViewById(R.id.appointment_details_time);
 
         fabMain = findViewById(R.id.fabDetailsMain);
-
         fabMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -159,53 +158,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             phoneTextView.setText(phone);
             phoneTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
 
-            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    openPhoneDialerIntent(phone);
-                }
-            });
-
-            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    openSmsIntent(phone);
-                }
-            });
-
-        } else {
-            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
-                }
-            });
-
-            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
-                }
-            });
         }
 
         if (!email.isEmpty()) {
             emailTextView.setText(email);
             emailTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
 
-            mailImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    openEmailClientIntent(email);
-                }
-            });
-        } else {
-            mailImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(AppointmentDetailsActivity.this, "Email not provided", Toast.LENGTH_LONG).show();
-                }
-            });
         }
 
         if (!desc.isEmpty()) {
@@ -350,6 +308,59 @@ public class AppointmentDetailsActivity extends AppCompatActivity implements Lif
             viewModel.update(appointments);
 
             Snackbar.make(coordinatorLayout, "Appointment updated", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!phone.isEmpty()) {
+            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openPhoneDialerIntent(phone);
+                }
+            });
+
+            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openSmsIntent(phone);
+                }
+            });
+        } else {
+            phoneCallImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
+                }
+            });
+
+            textMsgImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Phone number not provided", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        if (!email.isEmpty()) {
+            emailTextView.setText(email);
+            emailTextView.setTextColor(getResources().getColor(R.color.md_light_primary_text));
+
+            mailImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openEmailClientIntent(email);
+                }
+            });
+        } else {
+            mailImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(AppointmentDetailsActivity.this, "Email not provided", Toast.LENGTH_LONG).show();
+                }
+            });
         }
     }
 }

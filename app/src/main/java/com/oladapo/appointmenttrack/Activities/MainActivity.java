@@ -3,32 +3,28 @@ package com.oladapo.appointmenttrack.Activities;
 import android.animation.ObjectAnimator;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.mikepenz.materialdrawer.AccountHeader;
-import com.mikepenz.materialdrawer.AccountHeaderBuilder;
-import com.mikepenz.materialdrawer.Drawer;
-import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.model.DividerDrawerItem;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.google.android.material.navigation.NavigationView;
 import com.oladapo.appointmenttrack.Fragments.AboutFragment;
-import com.oladapo.appointmenttrack.Fragments.CalenderFragment;
-import com.oladapo.appointmenttrack.Fragments.HomeFragment;
+import com.oladapo.appointmenttrack.Fragments.AllAppointmentsFragment;
+import com.oladapo.appointmenttrack.Fragments.UpcomingFragment;
 import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
 import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
 import com.oladapo.appointmenttrack.R;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private Toolbar toolbar;
+    private DrawerLayout drawer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,130 +43,73 @@ public class MainActivity extends AppCompatActivity {
             ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
         }
 
-        initToolbar();
-
-        initDrawer();
-
-        FragmentManager manager = getSupportFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
-        transaction.replace(R.id.layout_container, new HomeFragment());
-        transaction.commit();
-    }
-
-    private void initToolbar() {
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
+
+        drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    .replace(R.id.fragment_container,
+                            new UpcomingFragment())
+                    .commit();
+
+            navigationView.setCheckedItem(R.id.nav_home);
+        }
     }
 
-    private void initDrawer() {
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-        AccountHeader header = new AccountHeaderBuilder()
-                .withCompactStyle(true)
-                .withActivity(this)
-                .withTranslucentStatusBar(true)
-                .withHeaderBackground(R.color.colorPrimary)
-                .build();
+        switch (menuItem.getItemId()) {
+            case R.id.nav_home:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new UpcomingFragment(), "home").addToBackStack(null).commit();
+                break;
 
-        PrimaryDrawerItem home = new PrimaryDrawerItem()
-                .withName("Home")
-                .withIdentifier(1)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withIcon(R.drawable.ic_home_black_24dp);
+            case R.id.nav_all:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new AllAppointmentsFragment(), "all").addToBackStack(null).commit();
+                break;
 
-        PrimaryDrawerItem calender = new PrimaryDrawerItem()
-                .withName("Calender")
-                .withIdentifier(2)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withIcon(R.drawable.ic_calender_black_24dp);
+            case R.id.nav_reminders:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new RemindersFragment(), "reminder").addToBackStack(null).commit();
+                break;
 
-        PrimaryDrawerItem reminders = new PrimaryDrawerItem()
-                .withName("Reminders")
-                .withIdentifier(3)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withIcon(R.drawable.ic_access_alarm_black_24dp);
+            case R.id.nav_settings:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new SettingsFragment(), "settings").addToBackStack(null).commit();
+                break;
 
-        PrimaryDrawerItem settings = new PrimaryDrawerItem()
-                .withName("Settings")
-                .withIdentifier(4)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withIcon(R.drawable.ic_settings_black_24dp);
+            case R.id.nav_about:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new AboutFragment(), "about").addToBackStack(null).commit();
+                break;
+        }
 
-        PrimaryDrawerItem about = new PrimaryDrawerItem()
-                .withName("About")
-                .withIdentifier(5)
-                .withTextColorRes(R.color.colorPrimaryDark)
-                .withSelectedColorRes(R.color.colorLight)
-                .withSelectedTextColorRes(R.color.colorPrimaryDark)
-                .withIcon(R.drawable.ic_info_outline_black_24dp);
+        drawer.closeDrawer(GravityCompat.START);
 
-        new DrawerBuilder()
-                .withActivity(this)
-                .withAccountHeader(header)
-                .withToolbar(toolbar)
-                .withCloseOnClick(true)
-                .addDrawerItems(
-                        home,
-                        calender,
-                        reminders,
-                        new DividerDrawerItem(),
-                        settings,
-                        about
-                )
-                .withActionBarDrawerToggleAnimated(true)
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+        return true;
+    }
 
-                        long i = drawerItem.getIdentifier();
+    @Override
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
 
-                        if (i == 1) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                                    .addToBackStack(null)
-                                    .replace(R.id.layout_container, new HomeFragment())
-                                    .commit();
-
-                        } else if (i == 2) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                                    .addToBackStack(null)
-                                    .replace(R.id.layout_container, new CalenderFragment())
-                                    .commit();
-
-                        } else if (i == 3) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                                    .addToBackStack(null)
-                                    .replace(R.id.layout_container, new RemindersFragment())
-                                    .commit();
-
-                        } else if (i == 4) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                                    .addToBackStack(null)
-                                    .replace(R.id.layout_container, new SettingsFragment())
-                                    .commit();
-
-                        } else if (i == 5) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                                    .addToBackStack(null)
-                                    .replace(R.id.layout_container, new AboutFragment())
-                                    .commit();
-                        }
-                        return false;
-                    }
-                })
-                .build();
+        }
     }
 }

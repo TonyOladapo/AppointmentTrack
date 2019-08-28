@@ -40,7 +40,7 @@ public class AppointmentAdapter extends ListAdapter<Appointments, AppointmentAda
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_home_recyclerview, parent, false);
+                .inflate(R.layout.item_upcoming_recyclerview, parent, false);
         return new ViewHolder(itemView);
     }
 

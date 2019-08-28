@@ -38,7 +38,7 @@ import com.oladapo.appointmenttrack.R;
 import java.util.List;
 import java.util.Objects;
 
-public class HomeFragment extends Fragment {
+public class UpcomingFragment extends Fragment {
 
     private ViewModel viewModel;
 
@@ -52,7 +52,7 @@ public class HomeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.fragment_upcoming, container, false);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        coordinatorLayout = view.findViewById(R.id.homeLayout);
+        coordinatorLayout = view.findViewById(R.id.upcomingLayout);
 
         final TextView noAppointmentsTextView = view.findViewById(R.id.no_appointments);
 
@@ -435,6 +435,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Objects.requireNonNull(getActivity()).setTitle("AppointmentTrack");
+        Objects.requireNonNull(getActivity()).setTitle("Upcoming");
     }
 }
