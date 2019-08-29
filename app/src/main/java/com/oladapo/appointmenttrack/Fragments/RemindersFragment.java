@@ -1,5 +1,6 @@
 package com.oladapo.appointmenttrack.Fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +28,7 @@ public class RemindersFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Objects.requireNonNull(getActivity()).setTitle("Reminders");
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 }

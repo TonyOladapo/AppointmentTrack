@@ -1,5 +1,6 @@
 package com.oladapo.appointmenttrack.Fragments;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -433,8 +434,7 @@ public class UpcomingFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Objects.requireNonNull(getActivity()).setTitle("Upcoming");
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 }

@@ -17,11 +17,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator">
+
+        <!--MainActivity-->
         <activity
             android:name=".Activities.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            tools:ignore="InnerclassSeparator">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,10 +30,19 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Activities.CreateEditAppointmentActivity"
-            tools:ignore="InnerclassSeparator" />
+        <!--CreateEditAppointmentActivity-->
+        <activity android:name=".Activities.CreateEditAppointmentActivity" />
+
+        <!--AppointmentDetailsActivity-->
         <activity android:name=".Activities.AppointmentDetailsActivity" />
 
+        <!--SettingsActivity-->
+        <activity android:name=".Activities.SettingsActivity" />
+
+        <!--AboutActivity-->
+        <activity android:name=".Activities.AboutActivity" />
+
+        <!--BroadcastReceiver-->
         <receiver
             android:name=".Receiver.ReminderBroadcastReceiver"
             android:enabled="true"
@@ -44,6 +54,7 @@
             </intent-filter>
         </receiver>
 
+        <!--Service-->
         <service android:name=".Service.BootService"/>
 
     </application>

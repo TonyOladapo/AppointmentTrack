@@ -1,5 +1,6 @@
 package com.oladapo.appointmenttrack.Fragments;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -286,7 +287,7 @@ public class AllAppointmentsFragment extends Fragment {
         private Drawable icon;
         private final ColorDrawable background;
 
-        public SwipeToDeleteCallback(AppointmentAdapter adapter) {
+        SwipeToDeleteCallback(AppointmentAdapter adapter) {
             super(0,ItemTouchHelper.LEFT);
             mAdapter = adapter;
             icon = ContextCompat.getDrawable(Objects.requireNonNull(getContext()),
@@ -349,8 +350,7 @@ public class AllAppointmentsFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Objects.requireNonNull(getActivity()).setTitle("All appointments");
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 }

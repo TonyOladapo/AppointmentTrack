@@ -1,30 +1,29 @@
 package com.oladapo.appointmenttrack.Activities;
 
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
-import com.oladapo.appointmenttrack.Fragments.AboutFragment;
-import com.oladapo.appointmenttrack.Fragments.AllAppointmentsFragment;
-import com.oladapo.appointmenttrack.Fragments.UpcomingFragment;
-import com.oladapo.appointmenttrack.Fragments.RemindersFragment;
-import com.oladapo.appointmenttrack.Fragments.SettingsFragment;
 import com.oladapo.appointmenttrack.R;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
+    private NavController navController;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,65 +42,68 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ObjectAnimator.ofArgb(getWindow(), "statusBarColor", startColor, endColor).start();
         }
 
+        setupNavigation();
+    }
+
+    private void setupNavigation() {
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryDark));
 
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+
+        NavigationUI.setupActionBarWithNavController(this, navController, drawer);
+        NavigationUI.setupWithNavController(navigationView, navController);
+
         navigationView.setNavigationItemSelectedListener(this);
+    }
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    .replace(R.id.fragment_container,
-                            new UpcomingFragment())
-                    .commit();
-
-            navigationView.setCheckedItem(R.id.nav_home);
-        }
+    @Override
+    public boolean onSupportNavigateUp() {
+        return NavigationUI.navigateUp(Navigation.findNavController(this, R.id.nav_host_fragment), drawer);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
+        menuItem.setChecked(true);
+        drawer.closeDrawers();
+
         switch (menuItem.getItemId()) {
             case R.id.nav_home:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new UpcomingFragment(), "home").addToBackStack(null).commit();
+                navController.navigate(R.id.upcomingFragment);
                 break;
 
             case R.id.nav_all:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new AllAppointmentsFragment(), "all").addToBackStack(null).commit();
+                navController.navigate(R.id.allAppointmentsFragment);
                 break;
 
             case R.id.nav_reminders:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new RemindersFragment(), "reminder").addToBackStack(null).commit();
+                navController.navigate(R.id.remindersFragment);
                 break;
 
             case R.id.nav_settings:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new SettingsFragment(), "settings").addToBackStack(null).commit();
+                startSettingsActivity();
                 break;
 
             case R.id.nav_about:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new AboutFragment(), "about").addToBackStack(null).commit();
+                startAboutActivity();
                 break;
         }
-
-        drawer.closeDrawer(GravityCompat.START);
-
         return true;
+    }
+
+    private void startSettingsActivity() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    private void startAboutActivity() {
+        Intent intent = new Intent(this, AboutActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -109,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-
+            super.onBackPressed();
         }
     }
 }
