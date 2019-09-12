@@ -7,11 +7,11 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 @Database(entities = {Appointments.class}, version = 1, exportSchema = false)
-public abstract class AppointmentsDatabase extends RoomDatabase {
+abstract class AppointmentsDatabase extends RoomDatabase {
 
     private static AppointmentsDatabase instance;
 
-    public abstract DAO appointmentsDao();
+    abstract DAO appointmentsDao();
 
     static synchronized AppointmentsDatabase getInstance(Context context) {
         if (instance == null) {

@@ -3,15 +3,12 @@ package com.oladapo.appointmenttrack.Activities;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -29,6 +26,7 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +37,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.Observer;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -46,18 +49,17 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.oladapo.appointmenttrack.Fragments.DatePickerFragment;
 import com.oladapo.appointmenttrack.R;
-import com.oladapo.appointmenttrack.Receiver.ReminderBroadcastReceiver;
+import com.oladapo.appointmenttrack.WorkManager.ReminderWork;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
@@ -92,6 +94,10 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     public static final String EXTRA_DATE_TIME = "dateTime";
     public static final String EXTRA_DATE_ADDED = "dateAdded";
 
+    public static final String DATA_KEY_NAME = "name_key";
+    public static final String DATA_KEY_DATE = "date_key";
+    public static final String DATA_KEY_TIME = "time_key";
+
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 10;
 
     int reminderTime;
@@ -101,6 +107,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
     String clientReminderDate;
     String clientReminderTime;
     String dateAdded;
+    String clientReminderMessage;
 
     private static String TAG = "vkv";
 
@@ -301,6 +308,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
                     @SuppressLint("DefaultLocale") String chosenTime = (String.format("%02d:%02d", hourOfDay, minute));
                     clientReminderTime = chosenTime;
+
+                    setReminderMessage();
                 }
             }
         };
@@ -314,6 +323,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 calendar.set(Calendar.DAY_OF_MONTH, day);
 
                 clientReminderDate = DateFormat.getDateInstance().format(calendar.getTime());
+
+                Toast.makeText(CreateEditAppointmentActivity.this, "Pick a time on which the reminder message will be sent", Toast.LENGTH_LONG).show();
 
                 TimePickerDialog timePickerDialog = new TimePickerDialog(CreateEditAppointmentActivity.this, timeSetListener, hour, minute, false);
                 timePickerDialog.setCancelable(false);
@@ -359,6 +370,8 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (SMS_REMINDER || EMAIL_REMINDER || BOTH_TYPES) {
+                            Toast.makeText(CreateEditAppointmentActivity.this, "Pick a date on which the reminder message will be sent", Toast.LENGTH_LONG).show();
+
                             DatePickerDialog datePickerDialog = new DatePickerDialog(CreateEditAppointmentActivity.this,
                                     dateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                             datePickerDialog.setCancelable(false);
@@ -384,6 +397,43 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                     }
                 })
                 .show();
+    }
+
+    private void setReminderMessage() {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate((R.layout.dialog_client_reminder), (ViewGroup) findViewById(android.R.id.content), false);
+
+        dialog.setView(dialogView);
+
+        final EditText editText = dialogView.findViewById(R.id.dialogMessageEditText);
+
+        dialog.setCancelable(false)
+                .setTitle("Set client reminder message")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        String message = editText.getText().toString();
+
+                        if (!message.isEmpty()) {
+
+                            clientReminderMessage = editText.getText().toString();
+                            Snackbar.make(constraintLayout, "Client reminder set", Snackbar.LENGTH_LONG).show();
+                        } else {
+                            clientReminderSwitch.setChecked(false);
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                        clientReminderSwitch.setChecked(false);
+                    }
+                });
+        dialog.create().show();
     }
 
     private void initToolbar() {
@@ -464,7 +514,6 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 clientReminderDate = intent.getStringExtra(EXTRA_CLIENT_REMINDER_DATE);
                 clientReminderTime = intent.getStringExtra(EXTRA_CLIENT_REMINDER_TIME);
                 dateAdded = intent.getStringExtra(EXTRA_DATE_ADDED);
-                //edit message
 
                 if (extraReminderSwitch == REMINDER_ON) {
                     reminderSwitch.setChecked(true);
@@ -625,31 +674,32 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         if (basicDataIsAvailable) {
             if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_ON) {
                 if (reminderDataIsAvailable && clientReminderDataIsAvailable) {
+                    //TODO: schedule clientReminder here
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString, clientReminderMessage);
                 }
 
             } else if (reminderState == REMINDER_ON && clientReminderState == CLIENT_REMINDER_OFF) {
                 if (reminderDataIsAvailable) {
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString, clientReminderMessage);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_ON) {
                 if (clientReminderDataIsAvailable) {
                     addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                            clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString, clientReminderMessage);
                 }
 
             } else if (reminderState == REMINDER_OFF && clientReminderState == CLIENT_REMINDER_OFF) {
                 addFormDataToIntent(name, phone, email, desc, date, time, reminderTime,
-                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString);
+                        clientReminderDate, clientReminderTime, reminderState, clientReminderState, SMS_REMINDER, EMAIL_REMINDER, BOTH_TYPES, dateTimeString, clientReminderMessage);
             }
         }
     }
 
     private void addFormDataToIntent(String name, String phone, String email, String desc, String date, String time, int reminderTime, String clientReminderDate,
-                                     String clientReminderTime, int reminderState, int clientReminderState, boolean isSms, boolean isEmail, boolean isBoth, String dateTime) {
+                                     String clientReminderTime, int reminderState, int clientReminderState, boolean isSms, boolean isEmail, boolean isBoth, String dateTime, String clientReminderMessage) {
 
         if (intentHasExtraCode) {
 
@@ -670,7 +720,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 intent.putExtra("clientReminderTime", clientReminderTime);
                 intent.putExtra("reminderState", reminderState);
                 intent.putExtra("clientReminderState", clientReminderState);
-                intent.putExtra("clientReminderMessage", "message");
+                intent.putExtra("clientReminderMessage", clientReminderMessage);
                 intent.putExtra("is_sms", isSms);
                 intent.putExtra("is_email", isEmail);
                 intent.putExtra("is_both", isBoth);
@@ -702,7 +752,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
                 intent.putExtra("clientReminderTime", clientReminderTime);
                 intent.putExtra("reminderState", reminderState);
                 intent.putExtra("clientReminderState", clientReminderState);
-                intent.putExtra("clientReminderMessage", "message");
+                intent.putExtra("clientReminderMessage", clientReminderMessage);
                 intent.putExtra("is_sms", isSms);
                 intent.putExtra("is_email", isEmail);
                 intent.putExtra("is_both", isBoth);
@@ -740,7 +790,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
             intent.putExtra("reminderState", reminderState);
             intent.putExtra("clientReminderState", clientReminderState);
             intent.putExtra("dateAdded", dateAdded);
-            intent.putExtra("clientReminderMessage", "message");
+            intent.putExtra("clientReminderMessage", clientReminderMessage);
             intent.putExtra("is_sms", isSms);
             intent.putExtra("is_email", isEmail);
             intent.putExtra("is_both", isBoth);
@@ -818,7 +868,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
     @AfterPermissionGranted(MY_PERMISSIONS_REQUEST_WRITE_CALENDAR)
     private void checkForCalendarPermission() {
-        String[] perms = {Manifest.permission.WRITE_CALENDAR};
+        String[] perms = {Manifest.permission.WRITE_CALENDAR, Manifest.permission.SEND_SMS};
 
         if (EasyPermissions.hasPermissions(this, perms)) {
             Log.d(TAG, "onPermissionsGranted: permission granted");
@@ -867,7 +917,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
             if (reminderState == REMINDER_ON) {
 
-                Long eventId = Long.parseLong(Objects.requireNonNull(uri).getLastPathSegment());
+                Long eventId = Long.parseLong(Objects.requireNonNull(Objects.requireNonNull(uri).getLastPathSegment()));
 
                 ContentValues reminder = new ContentValues();
 
@@ -877,7 +927,7 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
 
                 beginTime.add(Calendar.MINUTE, -reminderTime);
 
-                startNotificationAlarm(beginTime, eventTitle, notificationDate, notificationTime);
+                scheduleReminderNotification(beginTime, eventTitle, notificationDate, notificationTime);
 
                 getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, reminder);
             }
@@ -886,26 +936,35 @@ public class CreateEditAppointmentActivity extends AppCompatActivity implements 
         }
     }
 
-    private void startNotificationAlarm(Calendar calendar, String name, String date, String time) {
+    private void scheduleReminderNotification(Calendar notifTime, String name, String date, String time) {
 
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
+        Calendar calendar = Calendar.getInstance();
 
-        intent.putExtra("name", name);
-        intent.putExtra("date", date);
-        intent.putExtra("time", time);
+        long currentTime = calendar.getTimeInMillis();
+        long dueTime = notifTime.getTimeInMillis();
 
-        SharedPreferences preferences = getSharedPreferences("pref", 0);
-        SharedPreferences.Editor editor = preferences.edit();
+        long diff = dueTime - currentTime;
 
-        editor.putString("nameNotif", name);
-        editor.putString("dateNotif", date);
-        editor.putString("timeNotif", time);
+        Data data = new Data.Builder()
+                .putString(DATA_KEY_NAME ,name)
+                .putString(DATA_KEY_DATE, date)
+                .putString(DATA_KEY_TIME, time)
+                .build();
 
-        editor.apply();
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(ReminderWork.class)
+                .setInputData(data)
+                .setInitialDelay(diff, TimeUnit.MILLISECONDS)
+                .build();
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE), intent, 0);
-        Objects.requireNonNull(alarmManager).setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        WorkManager.getInstance(getApplicationContext()).enqueue(request);
+
+        WorkManager.getInstance(getApplicationContext()).getWorkInfoByIdLiveData(request.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        Log.d(TAG, "ReminderNotificationWork state: " + workInfo.getState().name());
+                    }
+                });
     }
 
     private void scheduleClientReminder() {

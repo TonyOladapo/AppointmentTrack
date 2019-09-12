@@ -27,6 +27,6 @@ public interface DAO {
     @Query("SELECT * FROM appointments_table ORDER BY dateTime")
     LiveData<List<Appointments>> getAllAppointments();
 
-    @Query("SELECT * FROM appointments_table WHERE dateTime >= datetime('now')")
+    @Query("SELECT * FROM appointments_table WHERE dateTime >= datetime('now') ORDER BY dateTime")
     LiveData<List<Appointments>> getUpcomingAppointments();
 }

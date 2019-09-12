@@ -44,11 +44,11 @@
     <activity
         android:id="@+id/settingsActivity"
         android:name="com.oladapo.appointmenttrack.Activities.SettingsActivity"
-        android:label="activity_settings"
+        android:label="Settings"
         tools:layout="@layout/activity_settings" />
     <activity
         android:id="@+id/aboutActivity"
         android:name="com.oladapo.appointmenttrack.Activities.AboutActivity"
-        android:label="activity_about"
+        android:label="About"
         tools:layout="@layout/activity_about" />
 </navigation>

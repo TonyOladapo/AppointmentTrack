@@ -367,12 +367,11 @@ public class UpcomingFragment extends Fragment {
             ItemTouchHelper.SimpleCallback {
 
         private AppointmentAdapter mAdapter;
-        private ViewModel viewModel;
         private Drawable icon;
         private final ColorDrawable background;
 
         SwipeToDeleteCallback(AppointmentAdapter adapter) {
-            super(0,ItemTouchHelper.LEFT);
+            super(0, ItemTouchHelper.LEFT);
             mAdapter = adapter;
             icon = ContextCompat.getDrawable(Objects.requireNonNull(getContext()),
                     R.drawable.ic_delete_white_24dp);
@@ -387,7 +386,7 @@ public class UpcomingFragment extends Fragment {
         @Override
         public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
-            viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
+            ViewModel viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ViewModel.class);
             viewModel.getUpcomingAppointments().observe(getViewLifecycleOwner(), new Observer<List<Appointments>>() {
                 @Override
                 public void onChanged(List<Appointments> appointments) {
