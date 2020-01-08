@@ -48,4 +48,10 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="set_client_reminder_message">Set client reminder message</string>
+    <string name="text_message">Text Message</string>
+    <string name="general">General</string>
+    <string name="google_calendar_sync">Sync with Google calendar</string>
+    <string name="notification_sound">Play notification sound</string>
+    <string name="notification">Notification</string>
+    <string name="calendar">Calendar</string>
 </resources>

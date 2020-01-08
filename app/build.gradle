@@ -37,7 +37,7 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     //navigationComponent
-    def nav_version = "2.2.0-alpha02"
+    def nav_version = "2.2.0-alpha03"
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
 

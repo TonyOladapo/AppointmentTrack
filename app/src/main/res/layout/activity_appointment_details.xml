@@ -120,7 +120,7 @@
                             android:focusable="true"
                             android:padding="20dp"
                             android:src="@drawable/ic_message_black_24dp"
-                            tools:ignore="ContentDescription" />
+                            android:contentDescription="@string/text_message" />
 
                         <TextView
                             android:layout_width="match_parent"
@@ -148,7 +148,7 @@
                             android:focusable="true"
                             android:padding="20dp"
                             android:src="@drawable/ic_email_black_24dp"
-                            tools:ignore="ContentDescription" />
+                            android:contentDescription="@string/email"/>
 
                         <TextView
                             android:layout_width="match_parent"

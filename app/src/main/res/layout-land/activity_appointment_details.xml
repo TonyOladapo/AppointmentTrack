@@ -72,7 +72,8 @@
                     android:orientation="horizontal"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/clientNameDetails">
+                    app:layout_constraintTop_toBottomOf="@+id/clientNameDetails"
+                    android:baselineAligned="false">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -82,19 +83,21 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/phone_call_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
                             android:padding="20dp"
-                            android:src="@drawable/ic_local_phone_black_24dp" />
+                            android:src="@drawable/ic_local_phone_black_24dp"
+                            android:contentDescription="@string/call" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="Call"
+                            android:text="@string/call"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small"
                             android:textColor="@color/colorPrimaryDark" />
 
@@ -108,19 +111,21 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/txt_msg_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
                             android:padding="20dp"
-                            android:src="@drawable/ic_message_black_24dp" />
+                            android:src="@drawable/ic_message_black_24dp"
+                            android:contentDescription="@string/text_message" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="Text"
+                            android:text="@string/text"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small"
                             android:textColor="@color/colorPrimaryDark" />
 
@@ -134,19 +139,21 @@
                         android:orientation="vertical">
 
                         <ImageButton
+                            android:id="@+id/mail_image_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
                             android:padding="20dp"
-                            android:src="@drawable/ic_email_black_24dp" />
+                            android:src="@drawable/ic_email_black_24dp"
+                            android:contentDescription="@string/email" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="Email"
+                            android:text="@string/email"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small"
                             android:textColor="@color/colorPrimaryDark" />
 

@@ -10,6 +10,8 @@ import java.util.Objects;
 
 public class BaseApp extends Application {
 
+    public static String TAG = "vkv";
+
     public static final String CHANNEL_ID = "channel1Id";
     public static final String CHANNEL_NAME = "Reminder notification";
 
